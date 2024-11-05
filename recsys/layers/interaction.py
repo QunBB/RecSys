@@ -1,7 +1,9 @@
 import tensorflow as tf
-from tensorflow.keras.initializers import Zeros
+from tensorflow.keras.initializers import Zeros, Constant
 from tensorflow.keras.layers import Layer
 from tensorflow.keras.regularizers import l2
+
+from recsys.layers.activation import get_activation
 
 
 class GateNU(Layer):
@@ -69,6 +71,7 @@ class PPNet(Layer):
                  multiples,
                  hidden_units,
                  activation,
+                 dropout=0.,
                  l2_reg=0.,
                  **kwargs):
         self.hidden_units = hidden_units
@@ -77,9 +80,13 @@ class PPNet(Layer):
         self.multiples = multiples
 
         self.dense_layers = []
+        self.dropout_layers = []
         for i in range(multiples):
             self.dense_layers.append(
                 [tf.keras.layers.Dense(units, activation=activation, kernel_regularizer=l2(l2_reg)) for units in hidden_units]
+            )
+            self.dropout_layers.append(
+                [tf.keras.layers.Dropout(dropout) for _ in hidden_units]
             )
         self.gate_nu = []
 
@@ -89,7 +96,7 @@ class PPNet(Layer):
         self.gate_nu = [GateNU([i*self.multiples, i*self.multiples], l2_reg=self.l2_reg
                                ) for i in self.hidden_units]
 
-    def call(self, inputs, *args, **kwargs):
+    def call(self, inputs, training=None, **kwargs):
         inputs, persona = inputs
 
         gate_list = []
@@ -107,6 +114,8 @@ class PPNet(Layer):
                 fc = self.dense_layers[n][i](output)
 
                 output = gate_list[i][n] * fc
+
+                output = self.dropout_layers[n][i](output, training=training)
 
             output_list.append(output)
 

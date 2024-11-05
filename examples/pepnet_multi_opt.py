@@ -6,6 +6,8 @@ from examples.pepnet import create_model, create_dataset
 def train(data, labels):
     model = create_model()
 
+    # Those layers with prefix "dnn" will use the adam optimizer, and adagrad for prefix "embedding".
+    # Also, you must have the default optimizer for legacy layers.
     model.compile(optimizer={'dnn': 'adam', 'embedding': 'Adagrad', 'default': 'adam'},
                   loss=tf.keras.losses.BinaryCrossentropy(),
                   metrics=['accuracy'])

@@ -19,9 +19,10 @@ from recsys.train.multi_opt_model import Model
 def pepnet(
         fields: List[Field],
         task_list: List[Task],
-        dnn_hidden_units: List[int] = [100, 64],
-        dnn_activation: Union[str, Callable] = "relu",
-        dnn_l2_reg: float = 0.,
+        hidden_units: List[int] = [100, 64],
+        activation: Union[str, Callable] = "relu",
+        dropout: float = 0.,
+        l2_reg: float = 0.,
         history_agg: str = "mean_pooling",
         agg_kwargs: dict = {}
 ) -> tf.keras.Model:
@@ -29,9 +30,10 @@ def pepnet(
 
     :param fields: the list of all fields
     :param task_list: the list of multiple task
-    :param dnn_hidden_units: DNN hidden units in PPNet
-    :param dnn_activation: DNN activation in PPNet
-    :param dnn_l2_reg: l2 regularizer of DNN parameters
+    :param hidden_units: DNN hidden units in PPNet
+    :param activation: DNN activation in PPNet
+    :param dropout: dropout rate of DNN
+    :param l2_reg: l2 regularizer of DNN parameters
     :param history_agg: the method of aggregation about historical behavior features
     :param agg_kwargs: arguments about aggregation
     :return:
@@ -44,8 +46,8 @@ def pepnet(
                                                                    history_agg, **agg_kwargs)
         embeddings_dict["context"] = tf.concat([embeddings_dict["history"], embeddings_dict["context"]], axis=-1)
 
-    epnet = EPNet(dnn_l2_reg, name="dnn_epnet")
-    ppnet = PPNet(len(task_list), dnn_hidden_units, dnn_activation, dnn_l2_reg, name="dnn_ppnet")
+    epnet = EPNet(l2_reg, name="dnn/epnet")
+    ppnet = PPNet(len(task_list), hidden_units, activation, l2_reg, name="dnn/ppnet")
 
     output_list = []
     # compute each domain's prediction
@@ -63,7 +65,7 @@ def pepnet(
             else:
                 output_name = f"{group}_{task.name}"
 
-            prediction = PredictLayer(task.belong, task.num_classes, name=f"dnn_{output_name}")(pp_output[i])
+            prediction = PredictLayer(task.belong, task.num_classes, name=f"dnn/{output_name}")(pp_output[i])
             output_list.append(Identity(name=output_name)(prediction))
 
     # each prediction's name is "{domain.group}_{task.name}" when there are more than one domain

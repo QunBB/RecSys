@@ -14,7 +14,7 @@ def create_model():
     model = pepnet([
             Field('uid', vocabulary_size=100),
             Field('item_id', vocabulary_size=20, belong='item'),
-            Field('his_item_id', vocabulary_size=20, emb='item', length=20, belong='history'),
+            Field('his_item_id', vocabulary_size=20, emb='item_id', length=20, belong='history'),
             Field('domain_1_id', vocabulary_size=2, emb="domain_id", belong='domain', group='domain_1'),
             Field('domain_2_id', vocabulary_size=2, emb="domain_id", belong='domain', group='domain_2'),
             Field('context_id', vocabulary_size=20, belong='context'),
