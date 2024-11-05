@@ -120,3 +120,144 @@ class PPNet(Layer):
             output_list.append(output)
 
         return output_list
+
+
+class PartitionedNormalization(Layer):
+    """
+    Partitioned Normalization for multi-domains
+
+    Reference:
+        One Model to Serve All: Star Topology Adaptive Recommender for Multi-Domain CTR Prediction
+    """
+    def __init__(self,
+                 num_domain,
+                 name=None,
+                 **kwargs):
+
+        self.bn_list = [tf.keras.layers.BatchNormalization(center=False, scale=False, name=f"bn_{i}", **kwargs) for i in range(num_domain)]
+
+        super(PartitionedNormalization, self).__init__(name=name)
+
+    def build(self, input_shape):
+        assert len(input_shape) == 2 and len(input_shape[1]) <= 2
+
+        self.global_gamma = self.add_weight(
+            name="global_gamma",
+            shape=[1],
+            initializer=Constant(0.5),
+            trainable=True
+        )
+        self.global_beta = self.add_weight(
+            name="global_beta",
+            shape=[1],
+            initializer=Zeros(),
+            trainable=True
+        )
+        self.domain_gamma = self.add_weight(
+                name="domain_gamma",
+                shape=[len(self.bn_list), 1],
+                initializer=Constant(0.5),
+                trainable=True
+            )
+        self.domain_beta = self.add_weight(
+                name="domain_beta",
+                shape=[len(self.bn_list), 1],
+                initializer=Zeros(),
+                trainable=True
+            )
+
+    def compute_bn(self, idx, x, training):
+        return tf.case([
+            (tf.equal(idx, i), lambda: self.bn_list[i](x, training=training)) for i in range(len(self.bn_list))
+        ])
+
+    def call(self, inputs, training=None):
+        inputs, domain_index = inputs
+
+        # take the first sample's domain index as current batch's domain index
+        domain_index = tf.reshape(domain_index, [-1])[0]
+
+        output = self.compute_bn(domain_index, inputs, training=training)
+
+        output = (self.global_gamma + self.domain_gamma[domain_index]) * output + (self.global_beta + self.domain_beta[domain_index])
+
+        return output
+
+
+class StarTopologyFCN(Layer):
+    """
+    Reference:
+        One Model to Serve All: Star Topology Adaptive Recommender for Multi-Domain CTR Prediction
+    """
+    def __init__(self,
+                 num_domain,
+                 hidden_units,
+                 activation="relu",
+                 dropout=0.,
+                 l2_reg=0.,
+                 **kwargs):
+        self.num_domain = num_domain
+        self.hidden_units = hidden_units
+        self.activation_list = [get_activation(activation) for _ in hidden_units]
+        self.dropout_list = [tf.keras.layers.Dropout(dropout) for _ in hidden_units]
+        self.l2_reg = l2_reg
+        super(StarTopologyFCN, self).__init__(**kwargs)
+
+    def build(self, input_shape):
+        assert len(input_shape) == 2
+        input_shape = input_shape[0]
+
+        self.shared_bias = [
+            self.add_weight(
+                name=f"shared_bias_{i}",
+                shape=[i],
+                initializer=Zeros(),
+                trainable=True
+            ) for i in self.hidden_units
+        ]
+        self.domain_bias = [
+            self.add_weight(
+                name=f"domain_bias_{i}",
+                shape=[self.num_domain, i],
+                initializer=Zeros(),
+                trainable=True
+            ) for i in self.hidden_units
+        ]
+
+        hidden_units = self.hidden_units.copy()
+        hidden_units.insert(0, input_shape[-1])
+        self.shared_weights = [
+            self.add_weight(
+                name=f"shared_weight_{i}",
+                shape=[hidden_units[i], hidden_units[i+1]],
+                initializer="glorot_uniform",
+                regularizer=l2(self.l2_reg),
+                trainable=True
+            ) for i in range(len(hidden_units) - 1)
+        ]
+        self.domain_weights = [
+            self.add_weight(
+                name=f"domain_weight_{i}",
+                shape=[self.num_domain, hidden_units[i], hidden_units[i + 1]],
+                initializer="glorot_uniform",
+                regularizer=l2(self.l2_reg),
+                trainable=True
+            ) for i in range(len(hidden_units) - 1)
+        ]
+
+    def call(self, inputs, training=None, **kwargs):
+        inputs, domain_index = inputs
+
+        # take the first sample's domain index as current batch's domain index
+        domain_index = int(tf.reshape(domain_index, [-1])[0])
+
+        output = inputs
+        for i in range(len(self.hidden_units)):
+            weight = self.shared_weights[i] * self.domain_weights[i][domain_index]
+            bias = self.shared_bias[i] + self.domain_bias[i][domain_index]
+
+            fc = tf.matmul(output, weight) + bias
+            output = self.activation_list[i](fc, training=training)
+            output = self.dropout_list[i](output, training=training)
+
+        return output
