@@ -14,7 +14,7 @@ class Task:
 @dataclass
 class Field:
     name: str
-    emb: str = ""  # embedding name
+    emb: str = ""  # embedding name. If it is empty, it will be same as `name`
     dim: int = 4  # embedding size
     vocabulary_size: int = 1  # 0 or 1 for dense field, 0 is meant to not use embedding
     l2_reg: float = 0.  # embeddings l2 regularizer
@@ -26,3 +26,6 @@ class Field:
 
     def __post_init__(self):
         assert self.belong in ["history", "user", "item", "domain", "context"], f"Invalid Field.belong: {self.belong}"
+
+        if not self.emb:
+            self.emb = self.name

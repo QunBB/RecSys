@@ -11,6 +11,7 @@ class PredictLayer(tf.keras.layers.Layer):
     def __init__(self,
                  task: str,
                  num_classes: int = 1,
+                 as_logit: bool = False,
                  use_bias: bool = True,
                  **kwargs):
         assert task in ["binary", "regression", "multiclass"], f"Invalid task: {task}"
@@ -21,17 +22,32 @@ class PredictLayer(tf.keras.layers.Layer):
             assert num_classes > 1
             output_dim = num_classes
 
-        self.task = task
-        self.dense = tf.keras.layers.Dense(output_dim, use_bias=use_bias)
+        self.output_dim = output_dim
+        self.use_bias = use_bias
+
+        self.activation = None
+        if not as_logit:
+            if task == "binary":
+                self.activation = tf.nn.sigmoid
+            elif task == "multiclass":
+                self.activation = tf.nn.softmax
+
+        self.dense = None
+
         super(PredictLayer, self).__init__(**kwargs)
 
-    def call(self, inputs, *args, **kwargs):
-        output = self.dense(inputs)
+    def build(self, input_shape):
+        if input_shape[-1] != self.output_dim:
+            self.dense = tf.keras.layers.Dense(self.output_dim, use_bias=self.use_bias)
 
-        if self.task == "binary":
-            output = tf.nn.sigmoid(output)
-        elif self.task == "multiclass":
-            output = tf.nn.softmax(output, axis=-1)
+    def call(self, inputs, *args, **kwargs):
+        output = inputs
+
+        if self.dense is not None:
+            output = self.dense(output)
+
+        if self.activation is not None:
+            output = self.activation(output)
 
         return output
 

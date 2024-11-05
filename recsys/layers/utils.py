@@ -18,13 +18,13 @@ def history_embedding_aggregation(
 
     if isinstance(history_embeddings, dict):
         for group in history_embeddings:
-            kwargs["name"] = f"dnn-his-{aggregation}-{group}"
+            kwargs["name"] = f"dnn/his-{aggregation}-{group}"
             layer = get_agg_layer(aggregation, **kwargs)
             outputs.append(
                 layer([target_embeddings, history_embeddings[group]])
             )
     else:
-        kwargs["name"] = f"dnn-his-{aggregation}"
+        kwargs["name"] = f"dnn/his-{aggregation}"
         layer = get_agg_layer(aggregation, **kwargs)
         outputs.append(
             layer([target_embeddings, history_embeddings])

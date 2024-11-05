@@ -12,7 +12,7 @@ from recsys.layers.embedding import DenseEmbedding
 
 def build_feature_embeddings(
         fields: List[Field],
-        prefix: str = "embedding_",
+        prefix: str = "embedding/",
         return_list: bool = False
 ) -> Tuple[Dict[str, Input], Union[Dict[str, Dict[str, tf.Tensor]], Dict[str, tf.Tensor]]]:
     emb_table_dict = {}
@@ -20,8 +20,6 @@ def build_feature_embeddings(
     history_emb = {f.emb or f.name for f in fields if f.belong == "history"}
 
     for field in fields:
-        if not field.emb:
-            field.emb = field.name
 
         if field.emb not in emb_table_dict:
             if field.vocabulary_size > 1:
