@@ -12,7 +12,7 @@ from recsys.layers.embedding import DenseEmbedding
 
 def build_feature_embeddings(
         fields: List[Field],
-        disable: Union[List[str], str] = "task",
+        disable: Optional[Union[List[str], str]] = "task",
         prefix: str = "embedding/",
         return_list: bool = False
 ) -> Tuple[Dict[str, Input], Dict[str, Union[Dict[str, tf.Tensor], tf.Tensor]]]:

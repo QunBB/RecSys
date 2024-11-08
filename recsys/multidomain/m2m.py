@@ -47,7 +47,7 @@ def m2m(
     :param agg_kwargs: arguments about aggregation
     :return:
     """
-    inputs_dict, embeddings_dict = build_feature_embeddings(fields)
+    inputs_dict, embeddings_dict = build_feature_embeddings(fields, disable=None)
 
     # Scenario Knowledge Representation
     scenario_mlp = FeedForwardLayer([scenario_dim], activation, l2_reg, dropout, name="dnn/scenario_mlp")
