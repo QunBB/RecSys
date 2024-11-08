@@ -121,7 +121,7 @@ class TransformerLayer(tf.keras.layers.Layer):
                  max_len=None, pos_emb="sum", **kwargs):
         self.pos_emb_layer = PositionalEmbedding(merge=pos_emb, max_length=max_len)
 
-        self.encoder = Encoder(num_layers, d_model, num_heads, dff, dropout_rate)
+        self.encoder = Encoder(d_model, num_layers, num_heads, dff, dropout_rate)
         super(TransformerLayer, self).__init__(**kwargs)
 
     def call(self, inputs):

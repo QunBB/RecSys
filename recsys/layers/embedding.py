@@ -39,7 +39,7 @@ class DenseEmbedding(tf.keras.layers.Layer):
         if self.embedding is None:
             return inputs
 
-        if int(inputs.get_shape()[-1]) != 1:
+        if inputs.get_shape()[-1] != 1:
             inputs = tf.expand_dims(inputs, axis=-1)
 
         return tf.matmul(inputs, self.embedding)
@@ -55,6 +55,8 @@ class PositionalEmbedding(tf.keras.layers.Layer):
         self.max_length = max_length
 
     def build(self, input_shape):
+        assert len(input_shape) == 3
+
         if self.dim is not None:
             self.pos_embedding = tf.keras.layers.Embedding(
                 input_shape[-2] if self.max_length is None else self.max_length,
@@ -72,7 +74,7 @@ class PositionalEmbedding(tf.keras.layers.Layer):
 
     def call(self, x):
         length = tf.shape(x)[1]
-        pos_emb = self.pos_embedding(tf.range(length))[tf.newaxis, :, :]
+        pos_emb = self.pos_embedding(tf.ones_like(x[:, :, 0], dtype="int32") * tf.range(length))
         if self.merge == "sum":
             x += pos_emb
         else:

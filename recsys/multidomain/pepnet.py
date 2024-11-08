@@ -6,10 +6,9 @@ KDD‘2023：https://arxiv.org/pdf/2302.01115
 from typing import List, Union, Callable
 
 import tensorflow as tf
-from tensorflow.keras.initializers import Zeros
 
 from recsys.feature import Field, Task
-from recsys.feature.utils import build_feature_embeddings
+from recsys.feature.utils import build_feature_embeddings, concatenate
 from recsys.layers.core import PredictLayer, Identity
 from recsys.layers.interaction import EPNet, PPNet
 from recsys.layers.utils import history_embedding_aggregation
@@ -42,12 +41,18 @@ def pepnet(
 
     # history embeddings sequence aggregation with target embedding
     if "history" in embeddings_dict:
-        embeddings_dict["history"] = history_embedding_aggregation(embeddings_dict["history"], embeddings_dict["item"],
+        # For regression task, item_embeddings may don't exist. We could take user embeddings as query.
+        if "item" in embeddings_dict:
+            target_embeddings = embeddings_dict["item"]
+        else:
+            target_embeddings = embeddings_dict["user"]
+        embeddings_dict["history"] = history_embedding_aggregation(embeddings_dict["history"],
+                                                                   target_embeddings,
                                                                    history_agg, **agg_kwargs)
-        embeddings_dict["context"] = tf.concat([embeddings_dict["history"], embeddings_dict["context"]], axis=-1)
+        embeddings_dict["context"] = concatenate(embeddings_dict, ["history", "context"])
 
     epnet = EPNet(l2_reg, name="dnn/epnet")
-    ppnet = PPNet(len(task_list), hidden_units, activation, l2_reg, name="dnn/ppnet")
+    ppnet = PPNet(len(task_list), hidden_units, activation, dropout, l2_reg, name="dnn/ppnet")
 
     output_list = []
     # compute each domain's prediction
@@ -56,7 +61,7 @@ def pepnet(
 
         ep_emb = epnet([domain_embeddings[group], embeddings_dict["context"]])
 
-        pp_output = ppnet([ep_emb, tf.concat([embeddings_dict["user"], embeddings_dict["item"]], axis=-1)])
+        pp_output = ppnet([ep_emb, concatenate(embeddings_dict, ["user", "item"])])
 
         # compute each task's prediction in special domain
         for i, task in enumerate(task_list):

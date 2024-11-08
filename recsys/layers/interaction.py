@@ -2,6 +2,7 @@ import tensorflow as tf
 from tensorflow.keras.initializers import Zeros, Constant
 from tensorflow.keras.layers import Layer
 from tensorflow.keras.regularizers import l2
+from tensorflow.keras import backend as K
 
 from recsys.layers.activation import get_activation
 
@@ -258,6 +259,140 @@ class StarTopologyFCN(Layer):
 
             fc = tf.matmul(output, weight) + bias
             output = self.activation_list[i](fc, training=training)
+            output = self.dropout_list[i](output, training=training)
+
+        return output
+
+
+class MetaUnit(Layer):
+    """
+    Reference:
+        Leaving No One Behind: A Multi-Scenario Multi-Task Meta Learning Approach for Advertiser Modeling
+    """
+    def __init__(self,
+                 num_layer,
+                 activation="leaky_relu",
+                 dropout=0.,
+                 l2_reg=0.,
+                 **kwargs):
+        self.num_layer = num_layer
+        self.l2_reg = l2_reg
+
+        self.weights_dense = []
+        self.bias_dense = []
+        self.activation_list = [get_activation(activation) for _ in range(num_layer)]
+        self.dropout_list = [tf.keras.layers.Dropout(dropout) for _ in range(num_layer)]
+
+        super(MetaUnit, self).__init__(**kwargs)
+
+    def build(self, input_shape):
+        assert len(input_shape) == 2
+        input_size = input_shape[0][-1]
+        self.input_size = input_size
+
+        for i in range(self.num_layer):
+            self.weights_dense.append(
+                tf.keras.layers.Dense(input_size*input_size, kernel_regularizer=l2(self.l2_reg))
+            )
+            self.bias_dense.append(
+                tf.keras.layers.Dense(input_size, kernel_regularizer=l2(self.l2_reg))
+            )
+
+    def call(self, inputs, training=None, **kwargs):
+        inputs, scenario_views = inputs
+
+        # [bs, 1, dim]
+        squeeze = False
+        if K.ndim(inputs) == 2:
+            squeeze = True
+            inputs = tf.expand_dims(inputs, axis=1)
+
+        output = inputs
+        for i in range(self.num_layer):
+            # [bs, dim*dim]
+            w = self.weights_dense[i](scenario_views)
+            b = self.bias_dense[i](scenario_views)
+
+            # [bs, dim, dim]
+            w = tf.reshape(w, [-1, self.input_size, self.input_size])
+            b = tf.expand_dims(b, axis=1)
+
+            # [bs, 1, dim] * [bs, dim, dim] = [bs, 1, dim]
+            fc = tf.matmul(output, w) + b
+
+            output = self.activation_list[i](fc, training=training)
+
+            output = self.dropout_list[i](output, training=training)
+
+        # [bs, dim]
+        if squeeze:
+            return tf.squeeze(output, axis=1)
+        else:
+            return output
+
+
+class MetaAttention(Layer):
+    """
+    Reference:
+        Leaving No One Behind: A Multi-Scenario Multi-Task Meta Learning Approach for Advertiser Modeling
+    """
+    def __init__(self,
+                 meta_unit=None,
+                 num_layer=3,
+                 activation="leaky_relu",
+                 dropout=0.,
+                 l2_reg=0.,
+                 **kwargs):
+        if meta_unit is not None:
+            self.meta_unit = meta_unit
+        else:
+            self.meta_unit = MetaUnit(num_layer, activation, dropout, l2_reg)
+        self.dense = tf.keras.layers.Dense(1)
+
+        super(MetaAttention, self).__init__(**kwargs)
+
+    def call(self, inputs, training=None, **kwargs):
+        expert_views, task_views, scenario_views = inputs
+        task_views = tf.repeat(tf.expand_dims(task_views, axis=1), tf.shape(expert_views)[1], axis=1)
+        # [bs, num_experts, dim]
+        meta_unit_output = self.meta_unit([tf.concat([expert_views, task_views], axis=-1), scenario_views], training=training)
+        # [bs, num_experts, 1]
+        score = self.dense(meta_unit_output)
+        # [bs, dim]
+        output = tf.reduce_sum(expert_views * score, axis=1)
+
+        return output
+
+
+class MetaTower(Layer):
+    """
+    Reference:
+        Leaving No One Behind: A Multi-Scenario Multi-Task Meta Learning Approach for Advertiser Modeling
+    """
+    def __init__(self,
+                 meta_unit=None,
+                 num_layer=3,
+                 meta_unit_depth=3,
+                 activation="leaky_relu",
+                 dropout=0.,
+                 l2_reg=0.,
+                 **kwargs):
+        if meta_unit is not None:
+            self.layers = [meta_unit] * num_layer  # all `meta_unit` in the lise will be the same object
+        else:
+            self.layers = [MetaUnit(meta_unit_depth, activation, dropout, l2_reg) for _ in range(num_layer)]
+        self.activation_list = [get_activation(activation) for _ in range(num_layer)]
+        self.dropout_list = [tf.keras.layers.Dropout(dropout) for _ in range(num_layer)]
+
+        super(MetaTower, self).__init__(**kwargs)
+
+    def call(self, inputs, training=None, **kwargs):
+        inputs, scenario_views = inputs
+
+        output = inputs
+        for i in range(len(self.layers)):
+            output = self.layers[i]([output, scenario_views], training=training)
+            output = self.activation_list[i](output, training=training)
             output = self.dropout_list[i](output, training=training)
 
         return output

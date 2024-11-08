@@ -1,6 +1,6 @@
 from itertools import chain
 from collections import OrderedDict
-from typing import List, Tuple, Dict, Union
+from typing import List, Tuple, Dict, Union, Optional
 
 import tensorflow as tf
 from tensorflow.keras import Input
@@ -12,12 +12,13 @@ from recsys.layers.embedding import DenseEmbedding
 
 def build_feature_embeddings(
         fields: List[Field],
+        disable: Union[List[str], str] = "task",
         prefix: str = "embedding/",
         return_list: bool = False
-) -> Tuple[Dict[str, Input], Union[Dict[str, Dict[str, tf.Tensor]], Dict[str, tf.Tensor]]]:
+) -> Tuple[Dict[str, Input], Dict[str, Union[Dict[str, tf.Tensor], tf.Tensor]]]:
     emb_table_dict = {}
 
-    history_emb = {f.emb or f.name for f in fields if f.belong == "history"}
+    history_emb = {f.emb for f in fields if f.belong == "history"}
 
     for field in fields:
 
@@ -54,6 +55,12 @@ def build_feature_embeddings(
 
         embeddings_dict[dtype][group].append(emb_table_dict[emb_name](inputs_dict[name]))
 
+    if disable:
+        if not isinstance(disable, list):
+            disable = [disable]
+        for belong in disable:
+            assert belong not in embeddings_dict, f"Current model doesn't support such features that belong to \"{belong}\""
+
     if not return_list:
         for dtype in embeddings_dict:
             if len(embeddings_dict[dtype]) <= 1:
@@ -64,3 +71,21 @@ def build_feature_embeddings(
                     embeddings_dict[dtype][group] = tf.keras.layers.Concatenate(axis=-1)(embeddings_dict[dtype][group])
 
     return inputs_dict, embeddings_dict
+
+
+def concatenate(
+        embeddings_dict,
+        names: Optional[List[str]] = None
+) -> tf.Tensor:
+    assert len(embeddings_dict) > 0, "embeddings_dict is empty"
+
+    if names is None:
+        return tf.concat(list(embeddings_dict.values()), axis=-1)
+
+    embeddings = []
+    for name in names:
+        embeddings.append(embeddings_dict[name])
+
+    assert len(embeddings) > 0, f"At least one must exist: {names}"
+
+    return tf.concat(embeddings, axis=-1)

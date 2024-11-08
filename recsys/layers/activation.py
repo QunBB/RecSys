@@ -42,7 +42,7 @@ class PRelu(tf.keras.layers.Layer):
             trainable=True,
         )
 
-    def call(self, inputs):
+    def call(self, inputs, **kwargs):
         pos = tf.nn.relu(inputs)
         neg = self.alphas * (inputs - tf.abs(inputs)) * 0.5
 
@@ -50,12 +50,8 @@ class PRelu(tf.keras.layers.Layer):
 
 
 class Activation(tf.keras.layers.Activation):
-    def __init__(self, activation, **kwargs):
-        super(Activation, self).__init__(activation, **kwargs)
 
-    def call(self, inputs, training=None):
-        if isinstance(self.activation, Dice):
-            return self.activation(inputs, training=training)
+    def call(self, inputs, **kwargs):
 
         return self.activation(inputs)
 

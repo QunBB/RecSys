@@ -9,8 +9,8 @@ import tensorflow as tf
 from tensorflow.keras.initializers import Zeros
 
 from recsys.feature import Field, Task
-from recsys.feature.utils import build_feature_embeddings
-from recsys.layers.core import PredictLayer, Identity, FeedForwardLayer
+from recsys.feature.utils import build_feature_embeddings, concatenate
+from recsys.layers.core import PredictLayer, FeedForwardLayer
 from recsys.layers.interaction import PartitionedNormalization, StarTopologyFCN
 from recsys.layers.utils import history_embedding_aggregation
 from recsys.train.multi_opt_model import Model
@@ -44,7 +44,7 @@ def star(
     """
     # domain field must only have one: `domain indicator`
     index = [i for i, f in enumerate(fields) if f.belong == "domain"]
-    assert len(index) == 1 and fields[index[0]].dtype in ("int32", "int64")
+    assert len(index) == 1 and fields[index[0]].dtype in ("int32", "int64"), "domain field must only have one: `domain indicator`"
     domain_indicator_name = fields[index[0]].name
 
     inputs_dict, embeddings_dict = build_feature_embeddings(fields)
@@ -54,10 +54,16 @@ def star(
 
     # history embeddings sequence aggregation with target embedding
     if "history" in embeddings_dict:
-        embeddings_dict["history"] = history_embedding_aggregation(embeddings_dict["history"], embeddings_dict["item"],
+        # For regression task, item_embeddings may don't exist. We could take user embeddings as query.
+        if "item" in embeddings_dict:
+            target_embeddings = embeddings_dict["item"]
+        else:
+            target_embeddings = embeddings_dict["user"]
+        embeddings_dict["history"] = history_embedding_aggregation(embeddings_dict["history"],
+                                                                   target_embeddings,
                                                                    history_agg, **agg_kwargs)
 
-    embeddings = tf.concat(list(embeddings_dict.values()), axis=-1)
+    embeddings = concatenate(embeddings_dict)
 
     # Star Topology FCN
     # Partitioned Normalization

@@ -16,7 +16,7 @@ The implement for `tensorflow 1.x` is in this [github](https://github.com/QunBB/
 | ------- | ------------------------------------------------------------ | ------------------------------------------------ | ----------- |
 | ......  |                                                              |                                                  |             |
 | PEPNet  | [KDD 2023] [PEPNet: Parameter and Embedding Personalized Network for Infusing with Personalized Prior Information](https://arxiv.org/pdf/2302.01115) | [zhihu](https://zhuanlan.zhihu.com/p/4552106145) | ✅           |
-| M2M     | [CIKM 2022] [Leaving No One Behind: A Multi-Scenario Multi-Task Meta Learning Approach for Advertiser Modeling](https://arxiv.org/abs/2201.06814) | [zhihu](https://zhuanlan.zhihu.com/p/939534954)  |             |
+| M2M     | [CIKM 2022] [Leaving No One Behind: A Multi-Scenario Multi-Task Meta Learning Approach for Advertiser Modeling](https://arxiv.org/abs/2201.06814) | [zhihu](https://zhuanlan.zhihu.com/p/939534954)  | ✅           |
 | SAR-Net | [CIKM 2021] [SAR-Net: A Scenario-Aware Ranking Network for Personalized Fair Recommendation in Hundreds of Travel Scenarios](https://arxiv.org/pdf/2110.06475) | [zhihu](https://zhuanlan.zhihu.com/p/718704281)  |             |
 | Star    | [CIKM 2021] [One Model to Serve All: Star Topology Adaptive Recommender for Multi-Domain CTR Prediction](https://arxiv.org/abs/2101.11427) | [zhihu](https://zhuanlan.zhihu.com/p/717054800)  | ✅           |
 | PLE     | [RecSys 2020] [Progressive Layered Extraction (PLE): A Novel Multi-Task Learning (MTL) Model for Personalized Recommendations](https://dl.acm.org/doi/10.1145/3383313.3412236) | [zhihu](https://zhuanlan.zhihu.com/p/425209494)  |             |
@@ -81,7 +81,7 @@ def create_model():
     model = pepnet([
             Field('uid', vocabulary_size=100),
             Field('item_id', vocabulary_size=20, belong='item'),
-            Field('his_item_id', vocabulary_size=20, emb='item', length=20, belong='history'),
+            Field('his_item_id', vocabulary_size=20, emb='item_id', length=20, belong='history'),
             Field('domain_1_id', vocabulary_size=2, emb="domain_id", belong='domain', group='domain_1'),
             Field('domain_2_id', vocabulary_size=2, emb="domain_id", belong='domain', group='domain_2'),
             Field('context_id', vocabulary_size=20, belong='context'),
