@@ -28,7 +28,7 @@ def m2m(
         dropout: float = 0.,
         l2_reg: float = 0.,
         history_agg: str = "transformer",
-        agg_kwargs: dict = {"pos_emb": "concat"}
+        agg_kwargs: dict = {"position_merge": "concat"}
 ) -> tf.keras.Model:
     """
 

@@ -72,9 +72,9 @@ class PositionalEmbedding(tf.keras.layers.Layer):
         return mask
 
 
-    def call(self, x):
+    def call(self, x, start=0):
         length = tf.shape(x)[1]
-        pos_emb = self.pos_embedding(tf.ones_like(x[:, :, 0], dtype="int32") * tf.range(length))
+        pos_emb = self.pos_embedding(tf.ones_like(x[:, :, 0], dtype="int32") * tf.range(start, length+start))
         if self.merge == "sum":
             x += pos_emb
         else:

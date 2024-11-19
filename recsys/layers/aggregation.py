@@ -12,7 +12,8 @@ def get_agg_layer(pooling,
         "mean_pooling": MeanPoolingLayer,
         "sum_pooling": SumPoolingLayer,
         "attention": AttentionLayer,
-        "transformer": TransformerLayer
+        "transformer": TransformerLayer,
+        "tim": TIM,
     }[pooling]
 
     return layer(**kwargs)
@@ -66,6 +67,12 @@ class AttentionLayer(tf.keras.layers.Layer):
 
     Reference:
         Deep Interest Network for Click-Through Rate Prediction
+
+    Args:
+        ffn_hidden_units: Hidden units for FFN.
+        ffn_activation: Activation for FFN.
+        query_ffn: Whether to use FFN for query input, it must be enabled when the dimension of query and keys are different.
+        query_activation: Activation for query FFN.
     """
     def __init__(self,
                  ffn_hidden_units=[80, 40],
@@ -117,12 +124,25 @@ class AttentionLayer(tf.keras.layers.Layer):
 
 
 class TransformerLayer(tf.keras.layers.Layer):
+    """
+    Multi-Head Attention.
+    
+    Reference:
+        Attention is all you Need (Vaswani et al., 2017)
+    
+    Args:
+        max_len: Max length of key and value.
+        position_merge: How to add position embedding. One of "sum" and "concat".
+        **kwargs: Args about multi-head attention. See `recsys/layers/transformer.py`.
+    """
     def __init__(self, num_layers=1, d_model=None, num_heads=2, dff=None, dropout_rate=0.1,
-                 max_len=None, pos_emb="sum", **kwargs):
-        self.pos_emb_layer = PositionalEmbedding(merge=pos_emb, max_length=max_len)
+                 max_len=None, position_merge="sum", **kwargs):
+        name = kwargs.pop("name")
 
-        self.encoder = Encoder(d_model, num_layers, num_heads, dff, dropout_rate)
-        super(TransformerLayer, self).__init__(**kwargs)
+        self.pos_emb_layer = PositionalEmbedding(merge=position_merge, max_length=max_len)
+        self.encoder = Encoder(d_model, num_layers, num_heads, dff, dropout_rate, **kwargs)
+
+        super(TransformerLayer, self).__init__(name=name)
 
     def call(self, inputs):
         query, keys = inputs
@@ -131,6 +151,46 @@ class TransformerLayer(tf.keras.layers.Layer):
             query = tf.expand_dims(query, axis=-2)
 
         keys = self.pos_emb_layer(keys)
+
+        outputs = self.encoder([query, keys])
+
+        return outputs
+
+
+class TIM(tf.keras.layers.Layer):
+    """
+    Temporal Interest Module with multi-head attention.
+
+    Reference:
+        Temporal Interest Network for User Response Prediction
+    
+    Args:
+        max_len: Max length of key and value.
+        **kwargs: Args about multi-head attention. See `recsys/layers/transformer.py`.
+    """
+    def __init__(self, num_layers=1, d_model=None, num_heads=2, dff=None, dropout_rate=0.1,
+                 max_len=None, **kwargs):
+        name = kwargs.pop("name")
+
+        self.max_len = max_len
+        self.encoder = Encoder(d_model, num_layers, num_heads, dff, dropout_rate, target_aware=True, **kwargs)
+
+        super(TIM, self).__init__(name=name)
+
+    def build(self, input_shape):
+        assert len(input_shape) == 2
+        input_shape = input_shape[1]
+        max_len = self.max_len if self.max_len is not None else input_shape[1] + 1
+        self.temporal_embedding = PositionalEmbedding(dim=input_shape[-1], max_length=max_len)
+
+    def call(self, inputs):
+        query, keys = inputs
+
+        if K.ndim(query) != K.ndim(keys):
+            query = tf.expand_dims(query, axis=-2)
+
+        query = self.temporal_embedding(query)
+        keys = self.temporal_embedding(keys, start=1)
 
         outputs = self.encoder([query, keys])
 

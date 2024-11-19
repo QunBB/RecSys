@@ -27,6 +27,7 @@ The implement for `tensorflow 1.x` is in this [github](https://github.com/QunBB/
 | model         | paper                                                        | blog                                            | implemented |
 | ------------- | ------------------------------------------------------------ | ----------------------------------------------- | ----------- |
 | ......        |                                                              |                                                 |             |
+| TIN           | [WWW 2024] [Temporal Interest Network for User Response Prediction](https://arxiv.org/abs/2308.08487) |                                                 | ✅           |
 | FiBiNet++     | [CIKM 2023 ] [FiBiNet++: Reducing Model Size by Low Rank Feature Interaction Layer for CTR Prediction](https://arxiv.org/abs/2209.05016) | [zhihu](https://zhuanlan.zhihu.com/p/603262632) |             |
 | MaskNet       | [DLP-KDD 2021] [MaskNet: Introducing Feature-Wise Multiplication to CTR Ranking Models by Instance-Guided Mask](https://arxiv.org/abs/2102.07619) | [zhihu](https://zhuanlan.zhihu.com/p/660375034) |             |
 | ContextNet    | [arXiv 2021] [ContextNet: A Click-Through Rate Prediction Framework Using Contextual information to Refine Feature Embedding](https://arxiv.org/abs/2107.12025) | [zhihu](https://zhuanlan.zhihu.com/p/660375034) |             |

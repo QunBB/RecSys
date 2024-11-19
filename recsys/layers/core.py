@@ -14,6 +14,12 @@ class PredictLayer(tf.keras.layers.Layer):
                  as_logit: bool = False,
                  use_bias: bool = True,
                  **kwargs):
+        """
+        Args:
+            num_classes: Number of classes when task is "multiclass"
+            as_logit: Whether to return origin logit, otherwise probability
+            use_bias: Whether to add bias
+        """
         assert task in ["binary", "regression", "multiclass"], f"Invalid task: \"{task}\""
 
         if task != "multiclass":
