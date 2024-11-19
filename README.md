@@ -24,28 +24,28 @@ The implement for `tensorflow 1.x` is in this [github](https://github.com/QunBB/
 
 ## Rank
 
-| model         | paper                                                        | blog                                            | implemented |
-| ------------- | ------------------------------------------------------------ | ----------------------------------------------- | ----------- |
-| ......        |                                                              |                                                 |             |
-| TIN           | [WWW 2024] [Temporal Interest Network for User Response Prediction](https://arxiv.org/abs/2308.08487) |                                                 | ✅           |
-| FiBiNet++     | [CIKM 2023 ] [FiBiNet++: Reducing Model Size by Low Rank Feature Interaction Layer for CTR Prediction](https://arxiv.org/abs/2209.05016) | [zhihu](https://zhuanlan.zhihu.com/p/603262632) |             |
-| MaskNet       | [DLP-KDD 2021] [MaskNet: Introducing Feature-Wise Multiplication to CTR Ranking Models by Instance-Guided Mask](https://arxiv.org/abs/2102.07619) | [zhihu](https://zhuanlan.zhihu.com/p/660375034) |             |
-| ContextNet    | [arXiv 2021] [ContextNet: A Click-Through Rate Prediction Framework Using Contextual information to Refine Feature Embedding](https://arxiv.org/abs/2107.12025) | [zhihu](https://zhuanlan.zhihu.com/p/660375034) |             |
-| DCN V2        | [WWW 2021] [DCN V2: Improved Deep & Cross Network and Practical Lessons for Web-scale Learning to Rank Systems](https://arxiv.org/abs/2008.13535) | [zhihu](https://zhuanlan.zhihu.com/p/631668163) |             |
-| FEFM          | [arXiv 2020] [Field-Embedded Factorization Machines for Click-through rate prediction](https://arxiv.org/abs/2009.09931) | [zhihu](https://zhuanlan.zhihu.com/p/613030015) |             |
-| FiBiNET       | [RecSys 2019] [FiBiNET: Combining Feature Importance and Bilinear feature Interaction for Click-Through Rate Prediction](https://arxiv.org/abs/1905.09433) | [zhihu](https://zhuanlan.zhihu.com/p/603262632) |             |
-| DSIN          | [IJCAI 2019] [Deep Session Interest Network for Click-Through Rate Prediction](https://arxiv.org/abs/1905.06482) | [zhihu](https://zhuanlan.zhihu.com/p/688338754) |             |
-| DIEN          | [AAAI 2019] [Deep Interest Evolution Network for Click-Through Rate Prediction](https://arxiv.org/abs/1809.03672) | [zhihu](https://zhuanlan.zhihu.com/p/685855305) |             |
-| DIN           | [KDD 2018] [Deep Interest Network for Click-Through Rate Prediction](https://arxiv.org/abs/1706.06978) | [zhihu](https://zhuanlan.zhihu.com/p/679852484) |             |
-| xDeepFM       | [KDD 2018] [xDeepFM: Combining Explicit and Implicit Feature Interactions for Recommender Systems](https://arxiv.org/abs/1803.05170) | [zhihu](https://zhuanlan.zhihu.com/p/634584585) |             |
-| FwFM          | [WWW 2018] [Field-weighted Factorization Machines for Click-Through Rate Prediction in Display Advertising](https://arxiv.org/abs/1806.03514) | [zhihu](https://zhuanlan.zhihu.com/p/613030015) |             |
-| NFM           | [SIGIR 2017] [Neural Factorization Machines for Sparse Predictive Analytics](https://arxiv.org/abs/1708.05027) | [zhihu](https://zhuanlan.zhihu.com/p/634584585) |             |
-| DeepFM        | [IJCAI 2017] [DeepFM: A Factorization-Machine based Neural Network for CTR Prediction](https://arxiv.org/abs/1703.04247) | [zhihu](https://zhuanlan.zhihu.com/p/631668163) |             |
-| Wide & Deep   | [DLRS 2016] [Wide & Deep Learning for Recommender Systems](https://arxiv.org/abs/1606.07792) | [zhihu](https://zhuanlan.zhihu.com/p/631668163) |             |
-| Deep Crossing | [KDD 2016] [Deep Crossing - Web-Scale Modeling without Manually Crafted Combinatorial Features](https://www.kdd.org/kdd2016/papers/files/adf0975-shanA.pdf) | [zhihu](https://zhuanlan.zhihu.com/p/623567076) |             |
-| PNN           | [ICDM 2016] [Product-based Neural Networks for User Response Prediction](https://arxiv.org/abs/1611.00144) | [zhihu](https://zhuanlan.zhihu.com/p/623567076) |             |
-| FNN           | [arXiv 2016] [Deep Learning over Multi-field Categorical Data: A Case Study on User Response Prediction](https://arxiv.org/abs/1601.02376) | [zhihu](https://zhuanlan.zhihu.com/p/623567076) |             |
-| FFM           | [RecSys 2016] [Field-aware Factorization Machines for CTR Prediction](https://dl.acm.org/doi/10.1145/2959100.2959134) | [zhihu](https://zhuanlan.zhihu.com/p/613030015) |             |
+| model         | paper                                                        | blog                                             | implemented |
+| ------------- | ------------------------------------------------------------ | ------------------------------------------------ | ----------- |
+| ......        |                                                              |                                                  |             |
+| TIN           | [WWW 2024] [Temporal Interest Network for User Response Prediction](https://arxiv.org/abs/2308.08487) | [zhihu](https://zhuanlan.zhihu.com/p/7832498217) | ✅           |
+| FiBiNet++     | [CIKM 2023 ] [FiBiNet++: Reducing Model Size by Low Rank Feature Interaction Layer for CTR Prediction](https://arxiv.org/abs/2209.05016) | [zhihu](https://zhuanlan.zhihu.com/p/603262632)  |             |
+| MaskNet       | [DLP-KDD 2021] [MaskNet: Introducing Feature-Wise Multiplication to CTR Ranking Models by Instance-Guided Mask](https://arxiv.org/abs/2102.07619) | [zhihu](https://zhuanlan.zhihu.com/p/660375034)  |             |
+| ContextNet    | [arXiv 2021] [ContextNet: A Click-Through Rate Prediction Framework Using Contextual information to Refine Feature Embedding](https://arxiv.org/abs/2107.12025) | [zhihu](https://zhuanlan.zhihu.com/p/660375034)  |             |
+| DCN V2        | [WWW 2021] [DCN V2: Improved Deep & Cross Network and Practical Lessons for Web-scale Learning to Rank Systems](https://arxiv.org/abs/2008.13535) | [zhihu](https://zhuanlan.zhihu.com/p/631668163)  |             |
+| FEFM          | [arXiv 2020] [Field-Embedded Factorization Machines for Click-through rate prediction](https://arxiv.org/abs/2009.09931) | [zhihu](https://zhuanlan.zhihu.com/p/613030015)  |             |
+| FiBiNET       | [RecSys 2019] [FiBiNET: Combining Feature Importance and Bilinear feature Interaction for Click-Through Rate Prediction](https://arxiv.org/abs/1905.09433) | [zhihu](https://zhuanlan.zhihu.com/p/603262632)  |             |
+| DSIN          | [IJCAI 2019] [Deep Session Interest Network for Click-Through Rate Prediction](https://arxiv.org/abs/1905.06482) | [zhihu](https://zhuanlan.zhihu.com/p/688338754)  |             |
+| DIEN          | [AAAI 2019] [Deep Interest Evolution Network for Click-Through Rate Prediction](https://arxiv.org/abs/1809.03672) | [zhihu](https://zhuanlan.zhihu.com/p/685855305)  |             |
+| DIN           | [KDD 2018] [Deep Interest Network for Click-Through Rate Prediction](https://arxiv.org/abs/1706.06978) | [zhihu](https://zhuanlan.zhihu.com/p/679852484)  |             |
+| xDeepFM       | [KDD 2018] [xDeepFM: Combining Explicit and Implicit Feature Interactions for Recommender Systems](https://arxiv.org/abs/1803.05170) | [zhihu](https://zhuanlan.zhihu.com/p/634584585)  |             |
+| FwFM          | [WWW 2018] [Field-weighted Factorization Machines for Click-Through Rate Prediction in Display Advertising](https://arxiv.org/abs/1806.03514) | [zhihu](https://zhuanlan.zhihu.com/p/613030015)  |             |
+| NFM           | [SIGIR 2017] [Neural Factorization Machines for Sparse Predictive Analytics](https://arxiv.org/abs/1708.05027) | [zhihu](https://zhuanlan.zhihu.com/p/634584585)  |             |
+| DeepFM        | [IJCAI 2017] [DeepFM: A Factorization-Machine based Neural Network for CTR Prediction](https://arxiv.org/abs/1703.04247) | [zhihu](https://zhuanlan.zhihu.com/p/631668163)  |             |
+| Wide & Deep   | [DLRS 2016] [Wide & Deep Learning for Recommender Systems](https://arxiv.org/abs/1606.07792) | [zhihu](https://zhuanlan.zhihu.com/p/631668163)  |             |
+| Deep Crossing | [KDD 2016] [Deep Crossing - Web-Scale Modeling without Manually Crafted Combinatorial Features](https://www.kdd.org/kdd2016/papers/files/adf0975-shanA.pdf) | [zhihu](https://zhuanlan.zhihu.com/p/623567076)  |             |
+| PNN           | [ICDM 2016] [Product-based Neural Networks for User Response Prediction](https://arxiv.org/abs/1611.00144) | [zhihu](https://zhuanlan.zhihu.com/p/623567076)  |             |
+| FNN           | [arXiv 2016] [Deep Learning over Multi-field Categorical Data: A Case Study on User Response Prediction](https://arxiv.org/abs/1601.02376) | [zhihu](https://zhuanlan.zhihu.com/p/623567076)  |             |
+| FFM           | [RecSys 2016] [Field-aware Factorization Machines for CTR Prediction](https://dl.acm.org/doi/10.1145/2959100.2959134) | [zhihu](https://zhuanlan.zhihu.com/p/613030015)  |             |
 
 ## Match
 
