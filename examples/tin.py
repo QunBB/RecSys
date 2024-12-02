@@ -1,18 +1,24 @@
+import random
+
 import numpy as np
 import tensorflow as tf
 
-from recsys.rank.tin import tin, Field
+from recsys.rank.tin import tin, Field, Task
+
+random.seed(2024)
+np.random.seed(2024)
+tf.random.set_seed(2024)
 
 
-def create_model():
+def create_model(task=Task(name="ctr", belong="binary")):
     model = tin([
             Field('uid', vocabulary_size=100),
-            Field('item_id', vocabulary_size=20, belong='item'),
+            Field('item_id', vocabulary_size=100, belong='item'),
             Field('cate_id', vocabulary_size=20, belong='item'),
-            Field('his_item_id', vocabulary_size=20, emb='item_id', length=20, belong='history'),
-            Field('his_cate_id', vocabulary_size=5, emb='cate_id', length=20, belong='history'),
-            Field('context_id', vocabulary_size=20, belong='context'),
-        ]
+            Field('his_item_id', vocabulary_size=100, emb='item_id', length=20, belong='history'),
+            Field('his_cate_id', vocabulary_size=20, emb='cate_id', length=20, belong='history'),
+            Field('context_id', vocabulary_size=100, belong='context'),
+        ], task=task
     )
 
     print(model.summary())
@@ -20,18 +26,17 @@ def create_model():
     return model
 
 
-def create_dataset():
-    n_samples = 2000
-    np.random.seed(2024)
+def create_dataset(n_samples=20000, seed=2024):
+    np.random.seed(seed)
     data = {
         'uid': np.random.randint(0, 100, [n_samples]),
-        'item_id': np.random.randint(0, 20, [n_samples]),
-        'cate_id': np.random.randint(0, 5, [n_samples]),
-        'his_item_id': np.random.randint(0, 20, [n_samples, 20]),
-        'his_cate_id': np.random.randint(0, 5, [n_samples, 20]),
-        'context_id': np.random.randint(0, 20, [n_samples]),
+        'item_id': np.random.randint(0, 100, [n_samples]),
+        'cate_id': np.random.randint(0, 20, [n_samples]),
+        'his_item_id': np.random.randint(0, 100, [n_samples, 20]),
+        'his_cate_id': np.random.randint(0, 20, [n_samples, 20]),
+        'context_id': np.random.randint(0, 100, [n_samples]),
     }
-    labels = np.random.randint(0, 2, [n_samples])
+    labels = np.where(np.random.random([n_samples]) <= 0.2, 1, 0)
 
     return data, labels
 
@@ -40,5 +45,10 @@ if __name__ == '__main__':
     model = create_model()
     data, labels = create_dataset()
 
-    model.compile(optimizer='adam', loss=tf.keras.losses.BinaryCrossentropy(), metrics=['accuracy'])
-    model.fit(data, labels, batch_size=32, epochs=10)
+    model.compile(optimizer='adam', loss=tf.keras.losses.BinaryCrossentropy(), metrics=[tf.keras.metrics.AUC()])
+    # loss: 0.4851 - auc: 0.6141
+    model.fit(data, labels, batch_size=128, epochs=10)
+
+    # loss: 0.4829 - auc: 0.4901
+    valid_data, labels = create_dataset(n_samples=1000, seed=2025)
+    model.evaluate(valid_data, labels)

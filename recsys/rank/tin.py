@@ -9,7 +9,7 @@ import tensorflow as tf
 
 from recsys.feature import Field, Task
 from recsys.feature.utils import build_feature_embeddings, concatenate
-from recsys.layers.core import FeedForwardLayer, PredictLayer
+from recsys.layers.core import FeedForwardLayer, PredictLayer, Identity
 from recsys.layers.utils import history_embedding_aggregation
 from recsys.train.multi_opt_model import Model
 
@@ -48,8 +48,15 @@ def tin(
     mlp_layer = FeedForwardLayer(hidden_units, activation, l2_reg, dropout, use_bn, name="dnn/MLPs")
     mlp_output = mlp_layer(embeddings)
 
-    prediction = PredictLayer(task.belong, task.num_classes, name=f"dnn/{task.name}_prediction")(mlp_output)
+    if task.return_logit:
+        logit = PredictLayer(task.belong, task.num_classes, as_logit=True, name=f"dnn/logit_layer")(mlp_output)
+        prediction = PredictLayer(task.belong, task.num_classes, name=f"dnn/predict_layer")(logit)
+        outputs = [Identity(name=task.name)(prediction),
+                   Identity(name="logit")(logit)]
+    else:
+        outputs = PredictLayer(task.belong, task.num_classes, name=f"dnn/predict_layer")(mlp_output)
+        outputs = Identity(name=task.name)(outputs)
 
-    model = Model(inputs=inputs_dict, outputs=prediction)
+    model = Model(inputs=inputs_dict, outputs=outputs)
 
     return model

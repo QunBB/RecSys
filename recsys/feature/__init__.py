@@ -8,9 +8,12 @@ class Task:
     name: str
     belong: str = "binary"
     num_classes: int = 1  # just for multiclass
+    return_logit: bool = False  # whether to return logit for ranking loss
 
     def __post_init__(self):
         assert self.belong in ["binary", "regression", "multiclass"], f"Invalid Task.belong: \"{self.belong}\""
+
+        self.return_logit = self.belong == "binary" and self.return_logit
 
 
 @dataclass
