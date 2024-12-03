@@ -57,6 +57,9 @@ class Activation(tf.keras.layers.Activation):
 
 
 def get_activation(name):
+    if not name:
+        return Activation("linear")
+
     if name == "dice":
         return Dice()
 

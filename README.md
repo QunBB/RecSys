@@ -20,7 +20,7 @@ The implement for `tensorflow 1.x` is in this [github](https://github.com/QunBB/
 | SAR-Net | [CIKM 2021] [SAR-Net: A Scenario-Aware Ranking Network for Personalized Fair Recommendation in Hundreds of Travel Scenarios](https://arxiv.org/pdf/2110.06475) | [zhihu](https://zhuanlan.zhihu.com/p/718704281)  |             |
 | Star    | [CIKM 2021] [One Model to Serve All: Star Topology Adaptive Recommender for Multi-Domain CTR Prediction](https://arxiv.org/abs/2101.11427) | [zhihu](https://zhuanlan.zhihu.com/p/717054800)  | ✅           |
 | PLE     | [RecSys 2020] [Progressive Layered Extraction (PLE): A Novel Multi-Task Learning (MTL) Model for Personalized Recommendations](https://dl.acm.org/doi/10.1145/3383313.3412236) | [zhihu](https://zhuanlan.zhihu.com/p/425209494)  |             |
-| MMoE    | [KDD 2018] [Modeling Task Relationships in Multi-task Learning with Multi-gate Mixture-of-Experts](https://arxiv.org/pdf/2305.16360) | [zhihu](https://zhuanlan.zhihu.com/p/425209494)  |             |
+| MMoE    | [KDD 2018] [Modeling Task Relationships in Multi-task Learning with Multi-gate Mixture-of-Experts](https://arxiv.org/pdf/2305.16360) | [zhihu](https://zhuanlan.zhihu.com/p/425209494)  | ✅           |
 
 ## Rank
 
@@ -36,7 +36,7 @@ The implement for `tensorflow 1.x` is in this [github](https://github.com/QunBB/
 | FiBiNET       | [RecSys 2019] [FiBiNET: Combining Feature Importance and Bilinear feature Interaction for Click-Through Rate Prediction](https://arxiv.org/abs/1905.09433) | [zhihu](https://zhuanlan.zhihu.com/p/603262632)  |             |
 | DSIN          | [IJCAI 2019] [Deep Session Interest Network for Click-Through Rate Prediction](https://arxiv.org/abs/1905.06482) | [zhihu](https://zhuanlan.zhihu.com/p/688338754)  |             |
 | DIEN          | [AAAI 2019] [Deep Interest Evolution Network for Click-Through Rate Prediction](https://arxiv.org/abs/1809.03672) | [zhihu](https://zhuanlan.zhihu.com/p/685855305)  |             |
-| DIN           | [KDD 2018] [Deep Interest Network for Click-Through Rate Prediction](https://arxiv.org/abs/1706.06978) | [zhihu](https://zhuanlan.zhihu.com/p/679852484)  |             |
+| DIN           | [KDD 2018] [Deep Interest Network for Click-Through Rate Prediction](https://arxiv.org/abs/1706.06978) | [zhihu](https://zhuanlan.zhihu.com/p/679852484)  | ✅           |
 | xDeepFM       | [KDD 2018] [xDeepFM: Combining Explicit and Implicit Feature Interactions for Recommender Systems](https://arxiv.org/abs/1803.05170) | [zhihu](https://zhuanlan.zhihu.com/p/634584585)  |             |
 | FwFM          | [WWW 2018] [Field-weighted Factorization Machines for Click-Through Rate Prediction in Display Advertising](https://arxiv.org/abs/1806.03514) | [zhihu](https://zhuanlan.zhihu.com/p/613030015)  |             |
 | NFM           | [SIGIR 2017] [Neural Factorization Machines for Sparse Predictive Analytics](https://arxiv.org/abs/1708.05027) | [zhihu](https://zhuanlan.zhihu.com/p/634584585)  |             |

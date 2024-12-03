@@ -1,4 +1,4 @@
-from typing import List, Callable, Union
+from typing import List, Callable, Union, Optional
 
 import tensorflow as tf
 from tensorflow.keras import backend as K
@@ -67,7 +67,7 @@ class Identity(tf.keras.layers.Layer):
 class FeedForwardLayer(tf.keras.layers.Layer):
     def __init__(self,
                  hidden_units: List[int],
-                 activation: Union[str, Callable] = "relu",
+                 activation: Optional[Union[str, Callable]] = "relu",
                  l2_reg: float = 0.,
                  dropout_rate: float = 0.,
                  use_bn: bool = False,

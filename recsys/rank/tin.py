@@ -22,7 +22,7 @@ def tin(
         dropout: float = 0.,
         l2_reg: float = 0.,
         use_bn: bool = False,
-        **attention_kwargs
+        attention_kwargs: dict = {}
 ) -> tf.keras.Model:
     """
 
