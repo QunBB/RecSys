@@ -141,28 +141,29 @@ class PartitionedNormalization(Layer):
 
     def build(self, input_shape):
         assert len(input_shape) == 2 and len(input_shape[1]) <= 2
+        dim = input_shape[0][-1]
 
         self.global_gamma = self.add_weight(
             name="global_gamma",
-            shape=[1],
+            shape=[dim],
             initializer=Constant(0.5),
             trainable=True
         )
         self.global_beta = self.add_weight(
             name="global_beta",
-            shape=[1],
+            shape=[dim],
             initializer=Zeros(),
             trainable=True
         )
         self.domain_gamma = self.add_weight(
                 name="domain_gamma",
-                shape=[len(self.bn_list), 1],
+                shape=[len(self.bn_list), dim],
                 initializer=Constant(0.5),
                 trainable=True
             )
         self.domain_beta = self.add_weight(
                 name="domain_beta",
-                shape=[len(self.bn_list), 1],
+                shape=[len(self.bn_list), dim],
                 initializer=Zeros(),
                 trainable=True
             )
