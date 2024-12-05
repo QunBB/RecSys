@@ -1,4 +1,6 @@
+import numpy as np
 import tensorflow as tf
+from scipy.constants import sigma
 from tensorflow.keras.initializers import Zeros, Constant
 from tensorflow.keras.layers import Layer
 from tensorflow.keras.regularizers import l2
@@ -125,7 +127,8 @@ class PPNet(Layer):
 
 class PartitionedNormalization(Layer):
     """
-    Partitioned Normalization for multi-domains
+    Partitioned Normalization for multi-domains.
+    And, the implement has supported different domains samples in a mini-batch.
 
     Reference:
         One Model to Serve All: Star Topology Adaptive Recommender for Multi-Domain CTR Prediction
@@ -168,20 +171,31 @@ class PartitionedNormalization(Layer):
                 trainable=True
             )
 
-    def compute_bn(self, idx, x, training):
-        return tf.case([
-            (tf.equal(idx, i), lambda: self.bn_list[i](x, training=training)) for i in range(len(self.bn_list))
-        ])
+    def generate_grid_tensor(self, indices, dim):
+        y = tf.range(dim)
+        x_grid, y_grid = tf.meshgrid(indices, y)
+        return tf.transpose(tf.stack([x_grid, y_grid], axis=-1), [1, 0, 2])
 
     def call(self, inputs, training=None):
         inputs, domain_index = inputs
+        domain_index = tf.cast(tf.reshape(domain_index, [-1]), "int32")
+        dim = inputs.shape.as_list()[-1]
 
-        # take the first sample's domain index as current batch's domain index
-        domain_index = tf.reshape(domain_index, [-1])[0]
+        output = inputs
+        # compute each domain's BN individually
+        for i, bn in enumerate(self.bn_list):
+            mask = tf.equal(domain_index, i)
+            single_bn = self.bn_list[i](tf.boolean_mask(inputs, mask), training=training)
+            single_bn = (self.global_gamma + self.domain_gamma[i]) * single_bn + (self.global_beta + self.domain_beta[i])
 
-        output = self.compute_bn(domain_index, inputs, training=training)
-
-        output = (self.global_gamma + self.domain_gamma[domain_index]) * output + (self.global_beta + self.domain_beta[domain_index])
+            # get current domain samples' indices
+            indices = tf.boolean_mask(tf.range(tf.shape(inputs)[0]), mask)
+            indices = self.generate_grid_tensor(indices, dim)
+            output = tf.cond(
+                tf.reduce_any(mask),
+                lambda: tf.reshape(tf.tensor_scatter_nd_update(output, indices, single_bn), [-1, dim]),
+                lambda: output
+            )
 
         return output
 
@@ -212,17 +226,16 @@ class StarTopologyFCN(Layer):
         self.shared_bias = [
             self.add_weight(
                 name=f"shared_bias_{i}",
-                shape=[i],
+                shape=[1, i],
                 initializer=Zeros(),
                 trainable=True
             ) for i in self.hidden_units
         ]
-        self.domain_bias = [
-            self.add_weight(
-                name=f"domain_bias_{i}",
-                shape=[self.num_domain, i],
-                initializer=Zeros(),
-                trainable=True
+        self.domain_bias_list = [
+            tf.keras.layers.Embedding(
+                self.num_domain,
+                output_dim=i,
+                embeddings_initializer=Zeros()
             ) for i in self.hidden_units
         ]
 
@@ -231,38 +244,37 @@ class StarTopologyFCN(Layer):
         self.shared_weights = [
             self.add_weight(
                 name=f"shared_weight_{i}",
-                shape=[hidden_units[i], hidden_units[i+1]],
+                shape=[1, hidden_units[i], hidden_units[i+1]],
                 initializer="glorot_uniform",
                 regularizer=l2(self.l2_reg),
                 trainable=True
             ) for i in range(len(hidden_units) - 1)
         ]
-        self.domain_weights = [
-            self.add_weight(
-                name=f"domain_weight_{i}",
-                shape=[self.num_domain, hidden_units[i], hidden_units[i + 1]],
-                initializer="glorot_uniform",
-                regularizer=l2(self.l2_reg),
-                trainable=True
+        self.domain_weights_list = [
+            tf.keras.layers.Embedding(
+                self.num_domain,
+                hidden_units[i] * hidden_units[i + 1],
+                embeddings_initializer="glorot_uniform",
+                embeddings_regularizer=l2(self.l2_reg)
             ) for i in range(len(hidden_units) - 1)
         ]
 
     def call(self, inputs, training=None, **kwargs):
         inputs, domain_index = inputs
 
-        # take the first sample's domain index as current batch's domain index
-        domain_index = int(tf.reshape(domain_index, [-1])[0])
-
-        output = inputs
+        output = tf.expand_dims(inputs, axis=1)
         for i in range(len(self.hidden_units)):
-            weight = self.shared_weights[i] * self.domain_weights[i][domain_index]
-            bias = self.shared_bias[i] + self.domain_bias[i][domain_index]
+            domain_weight = tf.reshape(self.domain_weights_list[i](domain_index),
+                                       [-1] + self.shared_weights[i].shape.as_list()[1:])
+            weight = self.shared_weights[i] * domain_weight
+            domain_bias = tf.reshape(self.domain_bias_list[i](domain_index), [-1] + self.shared_bias[i].shape.as_list()[1:])
+            bias = self.shared_bias[i] + domain_bias
 
-            fc = tf.matmul(output, weight) + bias
+            fc = tf.matmul(output, weight) + tf.expand_dims(bias, 1)
             output = self.activation_list[i](fc, training=training)
             output = self.dropout_list[i](output, training=training)
 
-        return output
+        return tf.squeeze(output, axis=1)
 
 
 class MetaUnit(Layer):

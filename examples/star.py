@@ -29,7 +29,7 @@ def create_dataset():
         'uid': np.random.randint(0, 100, [n_samples]),
         'item_id': np.random.randint(0, 20, [n_samples]),
         'his_item_id': np.random.randint(0, 20, [n_samples, 20]),
-        'domain_id': np.random.randint(0, num_domain) * np.ones([n_samples], dtype="int32"),
+        'domain_id': np.random.randint(0, num_domain, [n_samples]),
         'context_id': np.random.randint(0, 20, [n_samples]),
     }
     labels = np.random.randint(0, 2, [n_samples])
