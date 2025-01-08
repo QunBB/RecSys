@@ -19,7 +19,7 @@ The implement for `tensorflow 1.x` is in this [github](https://github.com/QunBB/
 | M2M     | [CIKM 2022] [Leaving No One Behind: A Multi-Scenario Multi-Task Meta Learning Approach for Advertiser Modeling](https://arxiv.org/abs/2201.06814) | [zhihu](https://zhuanlan.zhihu.com/p/939534954)  | ✅           |
 | SAR-Net | [CIKM 2021] [SAR-Net: A Scenario-Aware Ranking Network for Personalized Fair Recommendation in Hundreds of Travel Scenarios](https://arxiv.org/pdf/2110.06475) | [zhihu](https://zhuanlan.zhihu.com/p/718704281)  |             |
 | Star    | [CIKM 2021] [One Model to Serve All: Star Topology Adaptive Recommender for Multi-Domain CTR Prediction](https://arxiv.org/abs/2101.11427) | [zhihu](https://zhuanlan.zhihu.com/p/717054800)  | ✅           |
-| PLE     | [RecSys 2020] [Progressive Layered Extraction (PLE): A Novel Multi-Task Learning (MTL) Model for Personalized Recommendations](https://dl.acm.org/doi/10.1145/3383313.3412236) | [zhihu](https://zhuanlan.zhihu.com/p/425209494)  |             |
+| PLE     | [RecSys 2020] [Progressive Layered Extraction (PLE): A Novel Multi-Task Learning (MTL) Model for Personalized Recommendations](https://dl.acm.org/doi/10.1145/3383313.3412236) | [zhihu](https://zhuanlan.zhihu.com/p/425209494)  | ✅            |
 | MMoE    | [KDD 2018] [Modeling Task Relationships in Multi-task Learning with Multi-gate Mixture-of-Experts](https://arxiv.org/pdf/2305.16360) | [zhihu](https://zhuanlan.zhihu.com/p/425209494)  | ✅           |
 
 ## Rank

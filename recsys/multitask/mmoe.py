@@ -11,6 +11,7 @@ from recsys.feature import Field, Task
 from recsys.feature.utils import build_feature_embeddings, concatenate
 from recsys.layers.core import FeedForwardLayer, PredictLayer, Identity
 from recsys.layers.utils import history_embedding_aggregation
+from recsys.layers.interaction import GatingNetwork
 from recsys.train.multi_opt_model import Model
 
 
@@ -63,19 +64,17 @@ def mmoe(
             FeedForwardLayer([experts_dim], activation, l2_reg, dropout, use_bn, name=f"dnn/expert_{i}")(embeddings)
         )
 
-    # B = batch_size, N = num_experts, D = experts_dim
-    # [B, N, D]
     experts_output = tf.stack(experts_list, axis=1)
 
     output_list = []
     for task in task_list:
-        gate = FeedForwardLayer([num_experts], None, l2_reg, dropout, use_bn, name=f"dnn/gate_{task.name}")(embeddings)
-        gate = tf.nn.softmax(gate, axis=-1)
-        # [B, 1, N]
-        gate = tf.expand_dims(gate, axis=1)
 
-        # [B, D]
-        tower_inputs = tf.squeeze(tf.matmul(gate, experts_output), axis=1)
+        gating_network = GatingNetwork(num_experts=num_experts,
+                                       name=f"dnn/mmoe_{task.name}",
+                                       l2_reg=l2_reg,
+                                       dropout=dropout,
+                                       use_bn=use_bn)
+        tower_inputs = gating_network([embeddings, experts_output])
 
         tower_layer = FeedForwardLayer(hidden_units, activation, l2_reg, dropout, use_bn, name=f"dnn/tower_{task.name}")
         tower_output = tower_layer(tower_inputs)

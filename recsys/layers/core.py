@@ -4,7 +4,7 @@ import tensorflow as tf
 from tensorflow.keras import backend as K
 from tensorflow.keras.regularizers import l2
 
-from recsys.layers.activation import get_activation
+from .activation import get_activation
 
 
 class PredictLayer(tf.keras.layers.Layer):

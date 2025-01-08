@@ -2,7 +2,7 @@ from typing import Dict, Union
 
 import tensorflow as tf
 
-from recsys.layers.aggregation import get_agg_layer
+from .aggregation import get_agg_layer
 
 
 def history_embedding_aggregation(

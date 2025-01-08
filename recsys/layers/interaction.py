@@ -1,12 +1,11 @@
-import numpy as np
 import tensorflow as tf
-from scipy.constants import sigma
 from tensorflow.keras.initializers import Zeros, Constant
 from tensorflow.keras.layers import Layer
 from tensorflow.keras.regularizers import l2
 from tensorflow.keras import backend as K
 
-from recsys.layers.activation import get_activation
+from .activation import get_activation
+from .core import FeedForwardLayer
 
 
 class GateNU(Layer):
@@ -407,5 +406,40 @@ class MetaTower(Layer):
             output = self.layers[i]([output, scenario_views], training=training)
             output = self.activation_list[i](output, training=training)
             output = self.dropout_list[i](output, training=training)
+
+        return output
+
+
+class GatingNetwork(Layer):
+    """Multi-gate Mixture-of-Experts.
+    """
+    def __init__(self,
+                 num_experts,
+                 name=None,
+                 l2_reg=0.,
+                 dropout=0.,
+                 use_bn=False
+                 ):
+        self.num_experts = num_experts
+
+        self.ffn = FeedForwardLayer([num_experts], None, l2_reg, dropout, use_bn,)
+
+        super(GatingNetwork, self).__init__(name=name)
+
+    def build(self, input_shape):
+        assert len(input_shape) == 2
+        assert len(input_shape[0]) == 2 and len(input_shape[1]) == 3 and input_shape[1][1] == self.num_experts
+
+    def call(self, inputs, training=None):
+        # B = batch_size, N = num_experts, D = experts_dim
+        # experts = [B, N, D]
+        inputs, experts = inputs
+        # [B, N]
+        gate = self.ffn(inputs, training=training)
+        gate = tf.nn.softmax(gate, axis=-1)
+        # [B, 1, N]
+        gate = tf.expand_dims(gate, axis=1)
+        # [B, D]
+        output = tf.squeeze(tf.matmul(gate, experts), axis=1)
 
         return output

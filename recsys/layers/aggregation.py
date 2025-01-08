@@ -1,9 +1,9 @@
 import tensorflow as tf
 from tensorflow.keras import backend as K
 
-from recsys.layers.core import FeedForwardLayer
-from recsys.layers.transformer import Encoder
-from recsys.layers.embedding import PositionalEmbedding
+from .core import FeedForwardLayer
+from .transformer import Encoder
+from .embedding import PositionalEmbedding
 
 
 def get_agg_layer(pooling,
