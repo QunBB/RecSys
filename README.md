@@ -6,6 +6,8 @@ You can use these models with `model.fit()` ，and `model.predict()`  through `t
 
 The implement for `tensorflow 1.x` is in this [github](https://github.com/QunBB/DeepLearning/tree/main/recommendation).
 
+[<img src="https://api.gitsponsors.com/api/badge/img?id=881927822" height="40">](https://api.gitsponsors.com/api/badge/link?p=rL/i3W9HfJhQlA5NQT95pvdP40cz8Ut+kxh/8j++993FIw0/lB2Y0DoNCeKTUEkkov666sjLZUsMvXam5GBiaWz2LTu88oJXYmNnURVILIftEZo7gXuFj3sPDU1yTLaC)
+
 # Models List
 
 `......` means that it will be continuously updated. 
