@@ -43,5 +43,5 @@ if __name__ == '__main__':
     model = create_model()
     data, labels = create_dataset()
 
-    model.compile(optimizer='adam', loss=tf.keras.losses.MeanSquaredError(), metrics=tf.keras.metrics.AUC())
+    model.compile(optimizer='adam', loss=tf.keras.losses.BinaryCrossentropy(), metrics=tf.keras.metrics.AUC())
     model.fit(data, labels, batch_size=32, epochs=10)
