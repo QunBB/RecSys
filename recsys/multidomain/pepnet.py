@@ -55,27 +55,17 @@ def pepnet(
     ppnet = PPNet(len(task_list), hidden_units, activation, dropout, l2_reg, name="dnn/ppnet")
 
     output_list = []
-    # compute each domain's prediction
-    domain_embeddings = embeddings_dict["domain"]
-    for group in domain_embeddings:
 
-        ep_emb = epnet([domain_embeddings[group], embeddings_dict["context"]])
+    ep_emb = epnet([embeddings_dict["domain"], embeddings_dict["context"]])
 
-        pp_output = ppnet([ep_emb, concatenate(embeddings_dict, ["user", "item"])])
+    pp_output = ppnet([ep_emb, concatenate(embeddings_dict, ["user", "item"])])
 
-        # compute each task's prediction in special domain
-        for i, task in enumerate(task_list):
-            if len(domain_embeddings) == 1:
-                output_name = task.name
-            else:
-                output_name = f"{group}_{task.name}"
+    # compute each task's prediction in corresponding domain
+    for i, task in enumerate(task_list):
 
-            prediction = PredictLayer(task.belong, task.num_classes, name=f"dnn/{output_name}")(pp_output[i])
-            output_list.append(Identity(name=output_name)(prediction))
+        prediction = PredictLayer(task.belong, task.num_classes, name=f"dnn/{task}")(pp_output[i])
+        output_list.append(Identity(name=task.name)(prediction))
 
-    # each prediction's name is "{domain.group}_{task.name}" when there are more than one domain
-    # and is "{task.name}" when there is only one domain
-    # model = tf.keras.Model(inputs=inputs_dict, outputs=output_list)
     model = Model(inputs=inputs_dict, outputs=output_list)
 
     return model

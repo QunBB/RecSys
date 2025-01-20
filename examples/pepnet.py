@@ -9,7 +9,7 @@ task_list = [
     Task(name='fav')
 ]
 
-domain_list = ['domain_1', 'domain_2']
+num_domain = 3
 
 
 def create_model():
@@ -18,12 +18,10 @@ def create_model():
             Field('item_id', vocabulary_size=20, belong='item'),
             Field('his_item_id', vocabulary_size=20, emb='item_id', length=20, belong='history'),
             Field('context_id', vocabulary_size=20, belong='context'),
+            # domain's fields
+            Field(f'domain_id', vocabulary_size=num_domain, belong='domain'),
+            Field(f'domain_impression', vocabulary_size=1, belong='domain', dtype="float32")
         ]
-    # each domain's fields
-    for domain in domain_list:
-        fields.append(Field(f'{domain}_id', vocabulary_size=len(domain_list), emb='domain_id', belong='domain', group=domain))
-        # dense feature
-        fields.append(Field(f'{domain}_impression', vocabulary_size=1, emb='domain_impression', belong='domain', group=domain, dtype="float32"))
 
     model = pepnet(fields, task_list, [64, 32],
                    history_agg='attention', agg_kwargs={}
@@ -43,11 +41,10 @@ def create_dataset():
         'item_id': np.random.randint(0, 20, [n_samples]),
         'his_item_id': np.random.randint(0, 20, [n_samples, 20]),
         'context_id': np.random.randint(0, 20, [n_samples]),
+        'domain_id': np.random.randint(0, num_domain, [n_samples]),
+        'domain_impression': np.random.random([n_samples])
     }
-    for i, domain in enumerate(domain_list):
-        data[f'{domain}_id'] = np.ones([n_samples]) * i
-        data[f'{domain}_impression'] = np.random.random([n_samples])
-    labels = {f'{domain}_{t.name}': np.random.randint(0, 2, [n_samples]) for t in task_list for domain in domain_list}
+    labels = {t.name: np.random.randint(0, 2, [n_samples]) for t in task_list}
 
     return data, labels
 

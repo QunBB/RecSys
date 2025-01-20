@@ -79,19 +79,24 @@ task_list = [
     Task(name='fav')
 ]
 
+num_domain = 3
+
 
 def create_model():
-    model = pepnet([
+    fields = [
             Field('uid', vocabulary_size=100),
             Field('item_id', vocabulary_size=20, belong='item'),
             Field('his_item_id', vocabulary_size=20, emb='item_id', length=20, belong='history'),
-            Field('domain_1_id', vocabulary_size=2, emb="domain_id", belong='domain', group='domain_1'),
-            Field('domain_2_id', vocabulary_size=2, emb="domain_id", belong='domain', group='domain_2'),
             Field('context_id', vocabulary_size=20, belong='context'),
-        ], task_list, [64, 32],
-    history_agg="attention", agg_kwargs={}
-    # history_agg='transformer', agg_kwargs={'num_layers': 1, 'd_model': 4, 'num_heads': 2, 'dff': 64}
-    )
+            # domain's fields
+            Field(f'domain_id', vocabulary_size=num_domain, belong='domain'),
+            Field(f'domain_impression', vocabulary_size=1, belong='domain', dtype="float32")
+        ]
+
+    model = pepnet(fields, task_list, [64, 32],
+                   history_agg='attention', agg_kwargs={}
+                   # history_agg='transformer', agg_kwargs={'num_layers': 1, 'd_model': 4, 'num_heads': 2, 'dff': 64}
+                   )
 
     print(model.summary())
 
@@ -105,11 +110,11 @@ def create_dataset():
         'uid': np.random.randint(0, 100, [n_samples]),
         'item_id': np.random.randint(0, 20, [n_samples]),
         'his_item_id': np.random.randint(0, 20, [n_samples, 20]),
-        'domain_1_id': np.zeros([n_samples]),
-        'domain_2_id': np.ones([n_samples]),
         'context_id': np.random.randint(0, 20, [n_samples]),
+        'domain_id': np.random.randint(0, num_domain, [n_samples]),
+        'domain_impression': np.random.random([n_samples])
     }
-    labels = {f"{domain}_{t.name}": np.random.randint(0, 2, [n_samples]) for t in task_list for domain in ['domain_1', 'domain_2']}
+    labels = {t.name: np.random.randint(0, 2, [n_samples]) for t in task_list}
 
     return data, labels
 
