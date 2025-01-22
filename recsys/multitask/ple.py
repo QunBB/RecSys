@@ -1,7 +1,7 @@
 """
 Progressive Layered Extraction (PLE): A Novel Multi-Task Learning (MTL) Model for Personalized Recommendations
 
-RecSys'20：https://dl.acm.org/doi/10.1145/3383313.3412236
+RecSys'2020：https://dl.acm.org/doi/10.1145/3383313.3412236
 """
 from typing import List, Union, Callable
 

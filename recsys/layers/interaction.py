@@ -1,5 +1,7 @@
+from itertools import combinations
+
 import tensorflow as tf
-from tensorflow.keras.initializers import Zeros, Constant
+from tensorflow.keras.initializers import Zeros, Constant, Ones
 from tensorflow.keras.layers import Layer
 from tensorflow.keras.regularizers import l2
 from tensorflow.keras import backend as K
@@ -443,3 +445,82 @@ class GatingNetwork(Layer):
         output = tf.squeeze(tf.matmul(gate, experts), axis=1)
 
         return output
+
+
+class CrossNet(Layer):
+    """The Cross Network part of Deep&Cross Network model.
+
+    Reference:
+        cross_type="vector" -> Deep & Cross Network for Ad Click Predictions
+        cross_type="matrix" -> DCN V2: Improved Deep & Cross Network and Practical Lessons for Web-scale Learning to Rank Systems
+    """
+
+    def __init__(self,
+                 layer_num=2,
+                 cross_type="matrix",
+                 low_rank_dim=None,
+                 l2_reg=0,
+                 **kwargs):
+        assert cross_type in ("vector", "matrix")
+        self.layer_num = layer_num
+        self.cross_type = cross_type
+        self.low_rank_dim = low_rank_dim
+        self.l2_reg = l2_reg
+        super(CrossNet, self).__init__(**kwargs)
+
+    def build(self, input_shape):
+        if isinstance(input_shape, list):
+            dim = int(input_shape[0][-1]) * len(input_shape)
+        else:
+            dim = int(input_shape[-1])
+
+        if self.cross_type == 'vector':
+            self.kernels = [self.add_weight(name='kernel' + str(i),
+                                            shape=(dim, 1),
+                                            initializer="glorot_normal",
+                                            regularizer=l2(self.l2_reg),
+                                            trainable=True) for i in range(self.layer_num)]
+        elif self.cross_type == 'matrix':
+            if self.low_rank_dim is not None:
+                self.kernels_1 = [self.add_weight(name='kernel_1' + str(i),
+                                                  shape=(dim, self.low_rank_dim),
+                                                  initializer="glorot_normal",
+                                                  regularizer=l2(self.l2_reg),
+                                                  trainable=True) for i in range(self.layer_num)]
+                self.kernels_2 = [self.add_weight(name='kernel_2' + str(i),
+                                                  shape=(self.low_rank_dim, dim),
+                                                  initializer="glorot_normal",
+                                                  regularizer=l2(self.l2_reg),
+                                                  trainable=True) for i in range(self.layer_num)]
+            else:
+                self.kernels = [self.add_weight(name='kernel' + str(i),
+                                                shape=(dim, dim),
+                                                initializer="glorot_normal",
+                                                regularizer=l2(self.l2_reg),
+                                                trainable=True) for i in range(self.layer_num)]
+        self.bias = [self.add_weight(name='bias' + str(i),
+                                     shape=(1, dim),
+                                     initializer=Zeros(),
+                                     trainable=True) for i in range(self.layer_num)]
+
+    def call(self, inputs, **kwargs):
+        if isinstance(inputs, list):
+            inputs = tf.concat(inputs, axis=-1)
+        assert K.ndim(inputs) == 2
+
+        x_0 = inputs
+        x_l = inputs
+
+        for i in range(self.layer_num):
+            if self.cross_type == "vector":
+                xw = tf.matmul(x_l, self.kernels[i])
+                x_l = x_0 * xw + self.bias[i] + x_l
+            else:
+                if self.low_rank_dim is not None:
+                    xw_lora = tf.matmul(x_l, self.kernels_1[i])
+                    xw = tf.matmul(xw_lora, self.kernels_2[i])
+                else:
+                    xw = tf.matmul(x_l, self.kernels[i])
+                x_l = x_0 * (xw + self.bias[i]) + x_l
+
+        return x_l
