@@ -12,6 +12,7 @@ from recsys.layers.embedding import DenseEmbedding
 
 def build_feature_embeddings(
         fields: List[Field],
+        inputs_dict: Optional[dict] = None,
         disable: Optional[Union[List[str], str]] = "task",
         prefix: str = "embedding/",
         return_list: bool = False
@@ -20,6 +21,7 @@ def build_feature_embeddings(
 
     history_emb = {f.emb for f in fields if f.belong == "history"}
 
+    # create embedding table
     for field in fields:
 
         if field.emb not in emb_table_dict:
@@ -37,24 +39,29 @@ def build_feature_embeddings(
                     embeddings_initializer=field.initializer, embeddings_regularizer=l2(field.l2_reg)
                 )
 
+    # for the same fields with multiple embedding tables
+    if inputs_dict is None:
+        inputs_dict = OrderedDict()
     embeddings_dict = OrderedDict()
-    inputs_dict = OrderedDict()
     for field in fields:
+        # create fields input and compute their embeddings
         name = field.name
         emb_name = field.emb
         dtype = field.belong
         group = field.group
 
-        if field.belong == "history" or field.vocabulary_size == 0:
-            inputs_dict[name] = Input(shape=(field.length,), name=name, dtype=field.dtype)
-        else:
-            inputs_dict[name] = Input(shape=(), name=name, dtype=field.dtype)
+        if name not in inputs_dict:
+            if field.belong == "history" or field.vocabulary_size == 0:
+                inputs_dict[name] = Input(shape=(field.length,), name=name, dtype=field.dtype)
+            else:
+                inputs_dict[name] = Input(shape=(), name=name, dtype=field.dtype)
 
         embeddings_dict.setdefault(dtype, {})
         embeddings_dict[dtype].setdefault(group, [])
 
         embeddings_dict[dtype][group].append(emb_table_dict[emb_name](inputs_dict[name]))
 
+    # prohibit some special fields in the other model
     if disable:
         if not isinstance(disable, list):
             disable = [disable]

@@ -17,6 +17,7 @@ The implement for `tensorflow 1.x` is in this [github](https://github.com/QunBB/
 | model   | paper                                                        | blog                                             | implemented |
 | ------- | ------------------------------------------------------------ | ------------------------------------------------ | ----------- |
 | ......  |                                                              |                                                  |             |
+| STEM | [KDD 2024] [Ads Recommendation in a Collapsed and Entangled World](https://arxiv.org/abs/2403.00793) | | ✅ |
 | PEPNet  | [KDD 2023] [PEPNet: Parameter and Embedding Personalized Network for Infusing with Personalized Prior Information](https://arxiv.org/pdf/2302.01115) | [zhihu](https://zhuanlan.zhihu.com/p/4552106145) | ✅           |
 | M2M     | [CIKM 2022] [Leaving No One Behind: A Multi-Scenario Multi-Task Meta Learning Approach for Advertiser Modeling](https://arxiv.org/abs/2201.06814) | [zhihu](https://zhuanlan.zhihu.com/p/939534954)  | ✅           |
 | SAR-Net | [CIKM 2021] [SAR-Net: A Scenario-Aware Ranking Network for Personalized Fair Recommendation in Hundreds of Travel Scenarios](https://arxiv.org/pdf/2110.06475) | [zhihu](https://zhuanlan.zhihu.com/p/718704281)  |             |
