@@ -30,6 +30,7 @@ The implement for `tensorflow 1.x` is in this [github](https://github.com/QunBB/
 | model         | paper                                                        | blog                                             | implemented |
 | ------------- | ------------------------------------------------------------ | ------------------------------------------------ | ----------- |
 | ......        |                                                              |                                                  |             |
+| HMoE          | [KDD 2024] [Ads Recommendation in a Collapsed and Entangled World](https://arxiv.org/abs/2403.00793) |                                                  | ✅           |
 | GwPFM         | [KDD 2024] [Ads Recommendation in a Collapsed and Entangled World](https://arxiv.org/abs/2403.00793) |                                                  | ✅           |
 | TIN           | [WWW 2024] [Temporal Interest Network for User Response Prediction](https://arxiv.org/abs/2308.08487) | [zhihu](https://zhuanlan.zhihu.com/p/7832498217) | ✅           |
 | FiBiNet++     | [CIKM 2023 ] [FiBiNet++: Reducing Model Size by Low Rank Feature Interaction Layer for CTR Prediction](https://arxiv.org/abs/2209.05016) | [zhihu](https://zhuanlan.zhihu.com/p/603262632)  |             |

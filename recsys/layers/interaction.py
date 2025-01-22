@@ -741,3 +741,21 @@ class GwPFM(Layer):
             interactions.append(v_i * v_j * self.correlation[self.field_group_idx[i], self.field_group_idx[j]])
 
         return sum(interactions)
+
+
+class WeightedSum(Layer):
+    """Simple Weighted Sum
+    """
+    def build(self, input_shape):
+        if isinstance(input_shape, list):
+            self.weight = self.add_weight("weight", shape=[1, len(input_shape), 1], initializer=Ones())
+        else:
+            assert len(input_shape) == 3
+            self.weight = self.add_weight("weight", shape=[1, input_shape[1], 1], initializer=Ones())
+
+    def call(self, inputs, *args, **kwargs):
+        if isinstance(inputs, list):
+            inputs = tf.stack(inputs, axis=1)
+
+        output = tf.reduce_sum(inputs * self.weight, axis=1)
+        return output
