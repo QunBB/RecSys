@@ -15,6 +15,12 @@ class Task:
 
         self.return_logit = self.belong == "binary" and self.return_logit
 
+    def __str__(self):
+        return self.name
+
+    def __hash__(self):
+        return hash((self.name, self.belong, self.num_classes))  # 自定义哈希值
+
 
 @dataclass
 class Field:
@@ -26,17 +32,17 @@ class Field:
     initializer: Union[str, Initializer] = "uniform"  # embeddings initializer
     belong: str = "user"  # what kind of the field
     length: int = 0  # history's max length, or dense field's dimension which don't use embedding
-    group: str = "default"  # you can set different groups for multi domain or multitask or multi history
+    group: str = "default"  # you can set different groups for multitask or multi history or field groups
     dtype: str = "int32"
 
     def __post_init__(self):
         """
-        history: user history behavior sequence
-        user: user profile, like age, gender, etc.
-        item: target item feature, like item_id, category_id, etc.
-        domain: domain-side feature, like domain_id, statistics in special domain, etc.
-        context: other context feature whose embeddings are usually concatenated directly as deep layer inputs
-        task: task-side feature, like task_id, statistics in special task, etc.
+        history: user history behavior sequence.
+        user: user profile, e.g., age, gender.
+        item: target item feature, e.g., item_id, category_id.
+        domain: domain-side feature, e.g., domain_id, statistics in special domain.
+        context: other context feature whose embeddings are usually concatenated directly as deep layer inputs, e.g., timestamp.
+        task: task-side feature, e.g., task_id, statistics in special task.
         """
         assert self.belong in ["history", "user", "item", "domain", "context", "task"], f"Invalid Field.belong: \"{self.belong}\""
 

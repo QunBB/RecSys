@@ -684,3 +684,60 @@ class ProductLayer(Layer):
         # [bs, paris, 3*dim]
         p = tf.stack(p, axis=1)
         return p
+
+
+class GwPFM(Layer):
+    """GwPFM: Group-weighted Part-aware Factorization Machines.
+
+    Reference:
+        Ads Recommendation in a Collapsed and Entangled World
+    """
+
+    mismatch = (f"Expected inputs are 3|4 dimensions: [batch_size, num_fields, num_groups*dim]|[batch_size, num_fields, num_groups, dim], "
+                f"or a list of 2|3 dimensions: [batch_size, num_groups*dim]|[batch_size, num_groups, dim]. "
+                f"The `num_groups` is corresponding to the number of field groups")
+
+    def __init__(self,
+                 num_groups,
+                 field_group_idx=None,
+                 **kwargs):
+        self.num_groups = num_groups
+        self.field_group_idx = field_group_idx  # each field's group index
+        super(GwPFM, self).__init__(**kwargs)
+
+    def build(self, input_shape):
+        if isinstance(input_shape, list):
+            self.num_fields = len(input_shape)
+        elif len(input_shape) == 3:
+            self.num_fields = input_shape[1]
+            assert input_shape[-1] % self.num_groups == 0, self.mismatch
+        elif len(input_shape) == 4:
+            self.num_fields = input_shape[1]
+            num_groups = input_shape[2]
+            assert num_groups == self.num_groups, self.mismatch
+        else:
+            raise ValueError(self.mismatch)
+
+        self.correlation = self.add_weight(name="correlation",
+                                     shape=(self.num_groups, self.num_groups, 1),
+                                     initializer=Ones())
+        # consider each field as individual group
+        if self.field_group_idx is None:
+            self.field_group_idx = [i for i in range(self.num_groups)]
+
+    def call(self, inputs):
+        if isinstance(inputs, list):
+            inputs = tf.stack(inputs, axis=1)
+            if K.ndim(inputs) == 3:
+                inputs = tf.reshape(inputs, [-1, self.num_fields, self.num_groups, inputs.shape[-1] // self.num_groups])
+            elif K.ndim(inputs) != 4:
+                raise ValueError(self.mismatch)
+
+        interactions = []
+        for i, j in combinations(range(self.num_fields), 2):
+            v_i = inputs[:, i, self.field_group_idx[j], :]
+            v_j = inputs[:, j, self.field_group_idx[i], :]
+
+            interactions.append(v_i * v_j * self.correlation[self.field_group_idx[i], self.field_group_idx[j]])
+
+        return sum(interactions)

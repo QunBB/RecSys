@@ -3,6 +3,7 @@ from typing import List, Callable, Union, Optional
 import tensorflow as tf
 from tensorflow.keras import backend as K
 from tensorflow.keras.regularizers import l2
+from tensorflow.keras.initializers import Zeros
 
 from .activation import get_activation
 
@@ -45,6 +46,10 @@ class PredictLayer(tf.keras.layers.Layer):
     def build(self, input_shape):
         if input_shape[-1] != self.output_dim:
             self.dense = tf.keras.layers.Dense(self.output_dim, use_bias=self.use_bias)
+        elif self.use_bias:
+            self.bias = self.add_weight(
+                shape=(1,), initializer=Zeros(), name="global_bias")
+            self.dense = lambda x: x + self.bias
 
     def call(self, inputs, *args, **kwargs):
         output = inputs
@@ -101,3 +106,15 @@ class FeedForwardLayer(tf.keras.layers.Layer):
             output = fc
 
         return output
+
+
+def predict(task, inputs):
+    if task.return_logit:
+        logit = PredictLayer(task.belong, task.num_classes, as_logit=True, name=f"dnn/logit_layer")(inputs)
+        prediction = PredictLayer(task.belong, task.num_classes, name=f"dnn/predict_layer")(logit)
+        outputs = [Identity(name=task.name)(prediction), Identity(name="logit")(logit)]
+    else:
+        outputs = PredictLayer(task.belong, task.num_classes, name=f"dnn/predict_layer")(inputs)
+        outputs = Identity(name=task.name)(outputs)
+
+    return outputs
