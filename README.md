@@ -45,7 +45,7 @@ The implement for `tensorflow 1.x` is in this [github](https://github.com/QunBB/
 | DeepFM        | [IJCAI 2017] [DeepFM: A Factorization-Machine based Neural Network for CTR Prediction](https://arxiv.org/abs/1703.04247) | [zhihu](https://zhuanlan.zhihu.com/p/631668163)  |             |
 | Wide & Deep   | [DLRS 2016] [Wide & Deep Learning for Recommender Systems](https://arxiv.org/abs/1606.07792) | [zhihu](https://zhuanlan.zhihu.com/p/631668163)  |             |
 | Deep Crossing | [KDD 2016] [Deep Crossing - Web-Scale Modeling without Manually Crafted Combinatorial Features](https://www.kdd.org/kdd2016/papers/files/adf0975-shanA.pdf) | [zhihu](https://zhuanlan.zhihu.com/p/623567076)  |             |
-| PNN           | [ICDM 2016] [Product-based Neural Networks for User Response Prediction](https://arxiv.org/abs/1611.00144) | [zhihu](https://zhuanlan.zhihu.com/p/623567076)  |             |
+| PNN           | [ICDM 2016] [Product-based Neural Networks for User Response Prediction](https://arxiv.org/abs/1611.00144) | [zhihu](https://zhuanlan.zhihu.com/p/623567076)  | ✅           |
 | FNN           | [arXiv 2016] [Deep Learning over Multi-field Categorical Data: A Case Study on User Response Prediction](https://arxiv.org/abs/1601.02376) | [zhihu](https://zhuanlan.zhihu.com/p/623567076)  |             |
 | FFM           | [RecSys 2016] [Field-aware Factorization Machines for CTR Prediction](https://dl.acm.org/doi/10.1145/2959100.2959134) | [zhihu](https://zhuanlan.zhihu.com/p/613030015)  |             |
 

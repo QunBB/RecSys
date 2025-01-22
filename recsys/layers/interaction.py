@@ -524,3 +524,163 @@ class CrossNet(Layer):
                 x_l = x_0 * (xw + self.bias[i]) + x_l
 
         return x_l
+
+
+class ProductLayer(Layer):
+    """Product-based Neural Networks.
+
+    Reference:
+        Product-based Neural Networks for User Response Prediction over Multi-field Categorical Data
+    """
+    def __init__(self,
+                 inner=True,
+                 outer=False,
+                 kernel_type="mat",
+                 activation=None,
+                 net_size=None,
+                 **kwargs):
+        assert inner or outer, "you must apply at least one of `inner` or `outer` product"
+        if outer:
+            assert kernel_type in ("net", "mat", "vec", "num"), f"Not support such kernel `{kernel_type}` in outer product"
+
+        self.inner = inner
+        self.outer = outer
+        self.kernel_type = kernel_type
+        self.activation = activation
+        self.net_size = net_size
+        super(ProductLayer, self).__init__(**kwargs)
+
+    def build(self, input_shape):
+        assert len(input_shape) > 1 and all(len(shape) == 2 for shape in input_shape), \
+            "`ProductLayer` inputs must be a list of at least 2 inputs with dimensions 2"
+
+        num_fields = len(input_shape)
+        dim = input_shape[0][-1]
+        num_pairs = int(num_fields * (num_fields - 1) / 2)
+
+        if self.outer:
+            # PIN
+            if self.kernel_type == "net":
+                if self.activation is not None:
+                    self.activation = get_activation(self.activation)
+
+                self.kernel_w = [self.add_weight("micro_net_w1", shape=[1, num_pairs, dim * 3, self.net_size],
+                                                 initializer="glorot_normal"),
+                                 self.add_weight("micro_net_w2", shape=[1, num_pairs, self.net_size, 1],
+                                                 initializer="glorot_normal")]
+                self.kernel_b = [self.add_weight("micro_net_b1", shape=[1, num_pairs, self.net_size],
+                                                 initializer="glorot_normal"),
+                                 self.add_weight("micro_net_b2", shape=[1, num_pairs, 1],
+                                                 initializer="glorot_normal")]
+            # KPNN
+            elif self.kernel_type == "mat":
+                self.kernel = self.add_weight("product_kernel", shape=[dim, num_pairs, dim],
+                                              initializer="glorot_normal")
+            elif self.kernel_type == "vec":
+                self.kernel = self.add_weight("product_kernel", shape=[num_pairs, dim],
+                                              initializer="glorot_normal")
+            else:  # kernel_type == "num"
+                self.kernel = self.add_weight("product_kernel", shape=[num_pairs, 1],
+                                              initializer="glorot_normal")
+
+    def call(self, inputs):
+        outputs = []
+
+        if self.inner:
+            outputs.append(self._inner_product(inputs))
+        if self.outer:
+            outputs.append(self._outer_product(inputs))
+
+        return tf.concat(outputs, axis=-1)
+
+
+    def _inner_product(self, embeddings_list):
+        p, q = self._get_embedding_pairs(embeddings_list)
+
+        ip = tf.reduce_sum(p * q, [-1])
+
+        return ip
+
+    def _outer_product(self, embeddings_list):
+        # PIN: micro network kernel
+        if self.kernel_type == "net":
+            # [bs, paris, 3*dim]
+            p = self._get_mirco_embedding_paris(embeddings_list)
+            # [bs, paris, 3*dim, 1]
+            p = tf.expand_dims(p, axis=-1)
+
+            # [bs, paris, size]
+            sub_net_1 = tf.reduce_sum(
+                # [bs, paris, 3*dim, size]
+                tf.multiply(p, self.kernel_w[0]),
+                axis=2
+            ) + self.kernel_b[0]
+
+            if self.activation is not None:
+                sub_net_1 = self.activation(sub_net_1)
+
+            # [bs, paris, size, 1]
+            sub_net_1 = tf.expand_dims(sub_net_1, axis=-1)
+            # [bs, paris, 1]
+            sub_net_2 = tf.reduce_sum(
+                # [bs, paris, size, 1]
+                tf.multiply(sub_net_1, self.kernel_w[1]),
+                axis=2
+            ) + self.kernel_b[1]
+
+            return tf.squeeze(sub_net_2, axis=-1)
+
+        # KPNN: linear kernel
+        p, q = self._get_embedding_pairs(embeddings_list)
+
+        if self.kernel_type == "mat":
+            # batch * 1 * pair * k
+            p = tf.expand_dims(p, 1)
+            # batch * pair
+            kp = tf.reduce_sum(
+                # batch * pair * k
+                tf.multiply(
+                    # batch * pair * k
+                    tf.transpose(
+                        # batch * k * pair
+                        tf.reduce_sum(
+                            # batch * k * pair * k
+                            tf.multiply(
+                                p, self.kernel),
+                            -1),
+                        [0, 2, 1]),
+                    q),
+                -1)
+        else:
+            # 1 * pair * (k or 1)
+            k = tf.expand_dims(self.kernel, 0)
+            # batch * pair
+            kp = tf.reduce_sum(p * q * k, -1)
+
+        return kp
+
+    def _get_embedding_pairs(self, embeddings_list):
+        num_fields = len(embeddings_list)
+
+        p = []
+        q = []
+        for i in range(num_fields - 1):
+            for j in range(i + 1, num_fields):
+                p.append(embeddings_list[i])
+                q.append(embeddings_list[j])
+        # [bs, paris, dim]
+        p = tf.stack(p, axis=1)
+        q = tf.stack(q, axis=1)
+
+        return p, q
+
+    def _get_mirco_embedding_paris(self, embeddings_list):
+        num_fields = len(embeddings_list)
+        p = []
+        for i in range(num_fields - 1):
+            for j in range(i + 1, num_fields):
+                p.append(tf.concat([embeddings_list[i], embeddings_list[j], embeddings_list[i] * embeddings_list[j]], axis=-1))
+
+        # [bs, paris, 3*dim]
+        p = tf.stack(p, axis=1)
+        return p
