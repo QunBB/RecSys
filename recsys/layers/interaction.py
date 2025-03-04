@@ -759,3 +759,32 @@ class WeightedSum(Layer):
 
         output = tf.reduce_sum(inputs * self.weight, axis=1)
         return output
+
+
+class FM(Layer):
+    """Factorization Machines
+
+    Reference:
+        [Factorization Machines. ICDM'2010](https://ieeexplore.ieee.org/document/5694074)
+    """
+    def build(self, input_shape):
+        if isinstance(input_shape, list):  # [batch_size, dim] * num_fields
+            assert all([input_shape[i][-1] == input_shape[0][-1] for i in range(1, len(input_shape))])
+        else:
+            assert len(input_shape) == 3  # [batch_size, num_fields, dim]
+
+    def call(self, inputs, **kwargs):
+        if isinstance(inputs, list):
+            inputs = tf.stack(inputs, axis=1)
+
+        square_of_sum = tf.square(tf.reduce_sum(
+            inputs, axis=1, keepdims=True))
+        sum_of_square = tf.reduce_sum(
+            inputs * inputs, axis=1, keepdims=True)
+        cross_term = square_of_sum - sum_of_square
+        cross_term = 0.5 * tf.reduce_sum(cross_term, axis=2)
+
+        return cross_term
+
+    def compute_output_shape(self, input_shape):
+        return (None, 1)

@@ -15,9 +15,13 @@ def build_feature_embeddings(
         inputs_dict: Optional[dict] = None,
         disable: Optional[Union[List[str], str]] = "task",
         prefix: str = "embedding/",
-        return_list: bool = False
+        return_list: bool = False,
+        global_emb_table_dict: Optional[Dict[str, tf.keras.layers.Layer]] = None,
 ) -> Tuple[Dict[str, Input], Dict[str, Union[Dict[str, tf.Tensor], tf.Tensor]]]:
-    emb_table_dict = {}
+    if global_emb_table_dict is not None:
+        emb_table_dict = global_emb_table_dict
+    else:
+        emb_table_dict = {}
 
     history_emb = {f.emb for f in fields if f.belong == "history"}
 

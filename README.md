@@ -45,7 +45,7 @@ The implement for `tensorflow 1.x` is in this [github](https://github.com/QunBB/
 | xDeepFM       | [KDD 2018] [xDeepFM: Combining Explicit and Implicit Feature Interactions for Recommender Systems](https://arxiv.org/abs/1803.05170) | [zhihu](https://zhuanlan.zhihu.com/p/634584585)   |             |
 | FwFM          | [WWW 2018] [Field-weighted Factorization Machines for Click-Through Rate Prediction in Display Advertising](https://arxiv.org/abs/1806.03514) | [zhihu](https://zhuanlan.zhihu.com/p/613030015)   |             |
 | NFM           | [SIGIR 2017] [Neural Factorization Machines for Sparse Predictive Analytics](https://arxiv.org/abs/1708.05027) | [zhihu](https://zhuanlan.zhihu.com/p/634584585)   |             |
-| DeepFM        | [IJCAI 2017] [DeepFM: A Factorization-Machine based Neural Network for CTR Prediction](https://arxiv.org/abs/1703.04247) | [zhihu](https://zhuanlan.zhihu.com/p/631668163)   |             |
+| DeepFM        | [IJCAI 2017] [DeepFM: A Factorization-Machine based Neural Network for CTR Prediction](https://arxiv.org/abs/1703.04247) | [zhihu](https://zhuanlan.zhihu.com/p/631668163)   | ✅            |
 | Wide & Deep   | [DLRS 2016] [Wide & Deep Learning for Recommender Systems](https://arxiv.org/abs/1606.07792) | [zhihu](https://zhuanlan.zhihu.com/p/631668163)   |             |
 | Deep Crossing | [KDD 2016] [Deep Crossing - Web-Scale Modeling without Manually Crafted Combinatorial Features](https://www.kdd.org/kdd2016/papers/files/adf0975-shanA.pdf) | [zhihu](https://zhuanlan.zhihu.com/p/623567076)   |             |
 | PNN           | [ICDM 2016] [Product-based Neural Networks for User Response Prediction](https://arxiv.org/abs/1611.00144) | [zhihu](https://zhuanlan.zhihu.com/p/623567076)   | ✅           |
