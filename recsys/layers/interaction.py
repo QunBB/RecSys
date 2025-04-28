@@ -788,3 +788,125 @@ class FM(Layer):
 
     def compute_output_shape(self, input_shape):
         return (None, 1)
+
+
+class SENet(Layer):
+    """SENet+ Module.
+
+    Reference:
+        FiBiNet++:Improving FiBiNet by Greatly Reducing Model Size for CTR Prediction
+    """
+    def __init__(
+            self,
+            reduction_ratio: int = 3,
+            num_groups: int = 2,
+            **kwargs
+    ):
+        self.reduction_ratio = reduction_ratio
+        self.num_groups = num_groups
+
+        self.layer_norm = []
+
+        super(SENet, self).__init__(**kwargs)
+
+    def build(self, input_shape):
+        assert isinstance(input_shape, list) and all(len(shape) == 2 for shape in input_shape), \
+            "inputs must be a list of fields embeddings with rank 2"
+
+        reduction_size = max(1, len(input_shape) * self.num_groups * 2 // self.reduction_ratio)
+        self.excitation_layer_1 = tf.keras.layers.Dense(reduction_size, activation="relu")
+
+        dim_sum = sum([shape[-1] for shape in input_shape])
+        self.excitation_layer_2 = tf.keras.layers.Dense(dim_sum, activation="relu")
+
+        for _ in input_shape:
+            self.layer_norm.append(tf.keras.layers.LayerNormalization())
+
+    def call(self, inputs):
+        # Squeeze
+        group_embeddings_list = [
+            tf.reshape(emb, [-1, self.num_groups, tf.shape(emb)[-1] // self.num_groups]) for emb in inputs
+        ]
+        Z = ([tf.reduce_mean(emb, axis=-1) for emb in group_embeddings_list]
+             + [tf.reduce_max(emb, axis=-1) for emb in group_embeddings_list])
+        Z = tf.concat(Z, axis=1)  # [bs, field_size * num_groups * 2]
+
+        # Excitation
+        A_1 = self.excitation_layer_1(Z)
+        A_2 = self.excitation_layer_2(A_1)
+
+        # Re-weight & Fuse
+        feature_size_list = [emb.shape.as_list()[-1] for emb in inputs]
+        senet_plus_embeddings = [
+            emb * w + emb for emb, w in zip(inputs, tf.split(A_2, feature_size_list, axis=1))
+        ]
+
+        # Layer Normalization
+        senet_plus_output = [self.layer_norm[i](x) for i, x in enumerate(senet_plus_embeddings)]
+
+        return tf.concat(senet_plus_output, axis=-1)
+
+
+class BiLinearLayer(Layer):
+    """Bi-Linear+ Module.
+
+    Reference:
+        FiBiNet++:Improving FiBiNet by Greatly Reducing Model Size for CTR Prediction
+    """
+    def __init__(
+            self,
+            output_size: int = 50,
+            bilinear_type: str = "all",
+            product_1bit: bool = True,
+            **kwargs
+    ):
+        if bilinear_type not in ["all", "each", "interaction"]:
+            raise NotImplementedError("bilinear_type only support: ['all', 'each', 'interaction']")
+        self.output_size = output_size
+        self.bilinear_type = bilinear_type
+
+        if product_1bit:
+            self.func = self._full_interaction
+        else:
+            self.func = tf.multiply
+
+        super(BiLinearLayer, self).__init__(**kwargs)
+
+    def build(self, input_shape):
+        assert isinstance(input_shape, list) and all(len(shape) == 2 for shape in input_shape), \
+            "inputs must be a list of fields embeddings with rank 2"
+
+        if not all(shape[-1] == input_shape[0][-1] for shape in input_shape[1:]):
+            assert self.bilinear_type == "interaction", \
+                "The field interaction type must be `interaction` when embeddings' size are different."
+
+        if self.bilinear_type == "all":
+            self.w_layer = tf.keras.layers.Dense(input_shape[0][-1])
+        elif self.bilinear_type == "each":
+            self.w_layer = [tf.keras.layers.Dense(shape[-1]) for shape in input_shape]
+        else:
+            self.w_layer = [tf.keras.layers.Dense(j[-1]) for i, j in combinations(input_shape, 2)]
+
+        self.cml = tf.keras.layers.Dense(self.output_size)
+
+    def call(self, inputs):
+        field_size = len(inputs)
+
+        if self.bilinear_type == 'all':
+            v_dot = [self.w_layer(v) for v in inputs]
+            p = [self.func(v_dot[i], inputs[j]) for i, j in combinations(range(field_size), 2)]
+        elif self.bilinear_type == 'each':
+            v_dot = [self.w_layer[i](v) for i, v in enumerate(inputs)]
+            p = [self.func(v_dot[i], inputs[j]) for i, j in combinations(range(field_size), 2)]
+        else:  # interaction
+            p = [self.func(
+                layer(v[0]), v[1]
+            ) for v, layer in zip(combinations(inputs, 2), self.w_layer)]
+
+        output = self.cml(tf.concat(p, axis=-1))
+        return output
+
+    def _full_interaction(self, v_i, v_j):
+        # [bs, 1, dim] x [bs, dim, 1] = [bs, 1]
+        interaction = tf.matmul(tf.expand_dims(v_i, axis=1), tf.expand_dims(v_j, axis=-1))
+        return tf.reshape(interaction, [-1, 1])
