@@ -1,7 +1,8 @@
 import numpy as np
 import tensorflow as tf
 
-from recsys.multidomain.pepnet import pepnet, Field, Task
+from recsys.feature import Field, Task
+from recsys.multidomain.pepnet import pepnet
 
 task_list = [
     Task(name='click'),

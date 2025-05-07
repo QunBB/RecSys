@@ -1,7 +1,8 @@
 import numpy as np
 import tensorflow as tf
 
-from recsys.rank.dcn import dcn, Field, Task
+from recsys.feature import Field, Task
+from recsys.rank.dcn import dcn
 
 
 def create_model(task=Task(name="ctr", belong="binary")):

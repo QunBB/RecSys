@@ -1,7 +1,8 @@
 import numpy as np
 import tensorflow as tf
 
-from recsys.multitask.ple import ple, Field, Task
+from recsys.feature import Field, Task
+from recsys.multitask.ple import ple
 
 task_list = [
     Task(name='click'),

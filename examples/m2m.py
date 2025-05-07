@@ -1,7 +1,8 @@
 import numpy as np
 import tensorflow as tf
 
-from recsys.multidomain.m2m import m2m, Field, Task
+from recsys.feature import Field, Task
+from recsys.multidomain.m2m import m2m
 
 task_list = [
     Task(name='pv', belong="regression"),

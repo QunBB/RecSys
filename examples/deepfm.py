@@ -1,7 +1,8 @@
 import numpy as np
 import tensorflow as tf
 
-from recsys.rank.deepfm import deepfm, Field, Task
+from recsys.feature import Field, Task
+from recsys.rank.deepfm import deepfm
 
 
 def create_model(task=Task(name="ctr", belong="binary")):

@@ -1,0 +1,64 @@
+[project]
+name = "deep-rec-kit"
+version = "1.0.2"
+description = "Recommendation system, including rank&match models and metrics, all implemented by `tensorflow & keras 2.x`"
+readme = "README.md"
+license = "Apache-2.0"
+dependencies = [
+    "tensorflow>=2, <2.16",
+    "dataclasses"
+]
+requires-python = ">=3.6, <12"
+classifiers = [
+    "Typing :: Typed",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Operating System :: OS Independent",
+    "Operating System :: POSIX",
+    "Operating System :: MacOS",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: Microsoft :: Windows",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    #  "License :: OSI Approved :: Apache Software License"
+]
+
+[project.urls]
+Homepage = "https://github.com/QunBB/RecSys"
+Repository = "https://github.com/QunBB/RecSys"
+Issues = "https://github.com/QunBB/RecSys/issues"
+
+[tool.ruff]
+select = [
+    "E", # pycodestyle errors
+    "W", # pycodestyle warnings
+    "F", # pyflakes
+    "I", # isort
+    "B", # flake8-bugbear
+    "C4", # flake8-comprehensions
+    "UP", # pyupgrade
+]
+ignore = [
+    "E501", # line too long, handled by black
+    "B008", # do not perform function calls in argument defaults
+    "C901", # too complex
+    "W191", # indentation contains tabs
+]
+exclude = ["example"]
+
+[build-system]
+requires = ["hatchling>=1.26"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build]
+include = [
+    "recsys/*"
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["recsys"]

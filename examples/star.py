@@ -1,7 +1,8 @@
 import numpy as np
 import tensorflow as tf
 
-from recsys.multidomain.star import star, Field
+from recsys.feature import Field
+from recsys.multidomain.star import star
 
 
 num_domain = 3

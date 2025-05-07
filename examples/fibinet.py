@@ -1,7 +1,8 @@
 import numpy as np
 import tensorflow as tf
 
-from recsys.rank.fibinet import fibinet, Field, Task
+from recsys.feature import Field, Task
+from recsys.rank.fibinet import fibinet
 
 
 def create_model(task=Task(name="ctr", belong="binary")):

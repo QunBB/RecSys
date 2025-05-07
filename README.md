@@ -6,7 +6,28 @@ You can use these models with `model.fit()` ，and `model.predict()`  through `t
 
 The implement for `tensorflow 1.x` is in this [github](https://github.com/QunBB/DeepLearning/tree/main/recommendation).
 
-# Models List
+# 🛠️ Installation
+
+- ## Install via pip
+
+To install, simply use `pip` to pull down from [PyPI](https://pypi.org/project/deep-rec-kit/).
+
+```bash
+pip install deep-rec-kit
+```
+
+- ## Install from source
+
+If you want to use latest features, or develop new features, you can also build it from source.
+
+```bash
+git clone https://github.com/QunBB/RecSys
+cd RecSys
+pip install -e .
+```
+
+
+# 📖 Models List
 
 `......` means that it will be continuously updated. 
 
@@ -28,6 +49,7 @@ The implement for `tensorflow 1.x` is in this [github](https://github.com/QunBB/
 | model         | paper                                                        | blog                                              | implemented |
 | ------------- | ------------------------------------------------------------ | ------------------------------------------------- | ----------- |
 | ......        |                                                              |                                                   |             |
+| AdaF^2M^2 | [DASFAA 2025] [AdaF^2M^2: Comprehensive Learning and Responsive Leveraging Features in Recommendation System](https://arxiv.org/abs/2501.15816) | [zhihu](https://zhuanlan.zhihu.com/p/1903561181152641052) | ✅ |
 | HMoE          | [KDD 2024] [Ads Recommendation in a Collapsed and Entangled World](https://arxiv.org/abs/2403.00793) | [zhihu](https://zhuanlan.zhihu.com/p/19885938029) | ✅           |
 | GwPFM         | [KDD 2024] [Ads Recommendation in a Collapsed and Entangled World](https://arxiv.org/abs/2403.00793) | [zhihu](https://zhuanlan.zhihu.com/p/19885938029) | ✅           |
 | TIN           | [WWW 2024] [Temporal Interest Network for User Response Prediction](https://arxiv.org/abs/2308.08487) | [zhihu](https://zhuanlan.zhihu.com/p/7832498217)  | ✅           |
@@ -60,19 +82,20 @@ The implement for `tensorflow 1.x` is in this [github](https://github.com/QunBB/
 | MIND                           | [CIKM 2019] [Multi-Interest Network with Dynamic Routing for Recommendation at Tmall](https://arxiv.org/abs/1904.08030) | [zhihu](https://zhuanlan.zhihu.com/p/463064543) |             |
 | Youtube DNN                    | [RecSys 2016] [Deep Neural Networks for YouTube Recommendations](https://dl.acm.org/doi/10.1145/2959100.2959190) | [zhihu](https://zhuanlan.zhihu.com/p/405907646) |             |
 
-# Metrics
+# 🏗️ Metrics
 
 **Metrics for recommendation system.**
 
 It will be coming soon.
 
-# Example
+# 📘 Example
 
 ```python
 import numpy as np
 import tensorflow as tf
 
-from recsys.multidomain.pepnet import pepnet, Field, Task
+from recsys.feature import Field, Task
+from recsys.multidomain.pepnet import pepnet
 
 task_list = [
     Task(name='click'),
@@ -128,7 +151,7 @@ if __name__ == '__main__':
     model.fit(data, labels, batch_size=32, epochs=10)
 ```
 
-# Mulitple Optimizers
+# 🚀 Mulitple Optimizers
 
 Those layers with prefix "dnn" will use the adam optimizer, and adagrad for prefix "embedding". 
 Also, you must have the default optimizer for legacy layers.
@@ -136,7 +159,24 @@ Also, you must have the default optimizer for legacy layers.
 ```python
 import tensorflow as tf
 
-from examples.pepnet import create_model, create_dataset
+from recsys.feature import Field, Task
+from recsys.multidomain.pepnet import pepnet
+
+task_list = [
+    Task(name='click'),
+    Task(name='like'),
+    Task(name='fav')
+]
+
+num_domain = 3
+
+
+def create_model():
+    # absolutely same as the above ......
+
+
+def create_dataset():
+    # absolutely same as the above ......
 
 
 def train(data, labels):

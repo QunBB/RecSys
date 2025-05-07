@@ -1,7 +1,9 @@
 import numpy as np
 import tensorflow as tf
 
-from recsys.rank.hmoe import hmoe, InteractionExpert, Field, Task
+from recsys.feature import Field, Task
+from recsys.layers.interaction import InteractionExpert
+from recsys.rank.hmoe import hmoe
 
 
 def create_model(task=Task(name="ctr", belong="binary")):

@@ -1,7 +1,8 @@
 import numpy as np
 import tensorflow as tf
 
-from recsys.multitask.mmoe import mmoe, Field, Task
+from recsys.feature import Field, Task
+from recsys.multitask.mmoe import mmoe
 
 task_list = [
     Task(name='click'),

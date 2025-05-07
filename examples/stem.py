@@ -1,7 +1,8 @@
 import numpy as np
 import tensorflow as tf
 
-from recsys.multitask.stem import stem, Field, Task
+from recsys.feature import Field, Task
+from recsys.multitask.stem import stem
 
 
 task_list = [

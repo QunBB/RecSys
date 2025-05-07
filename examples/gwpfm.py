@@ -1,7 +1,8 @@
 import numpy as np
 import tensorflow as tf
 
-from recsys.rank.gwpfm import gwpfm, Field, Task
+from recsys.feature import Field, Task
+from recsys.rank.gwpfm import gwpfm
 
 
 def create_model(task=Task(name="ctr", belong="binary")):

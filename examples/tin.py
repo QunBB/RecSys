@@ -3,7 +3,8 @@ import random
 import numpy as np
 import tensorflow as tf
 
-from recsys.rank.tin import tin, Field, Task
+from recsys.feature import Field, Task
+from recsys.rank.tin import tin
 
 random.seed(2024)
 np.random.seed(2024)
