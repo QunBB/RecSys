@@ -1,7 +1,7 @@
 import tensorflow as tf
 from tensorflow.keras import backend as K
 
-from keras.src.losses import LossFunctionWrapper, losses_utils
+from keras.src.losses import BinaryCrossentropy, LossFunctionWrapper, losses_utils
 
 
 def ranking_loss(y_true, y_pred):
@@ -22,6 +22,18 @@ def ranking_loss(y_true, y_pred):
     batch_size = tf.cast(tf.shape(y_pred)[0], z_ij.dtype)
 
     return tf.reduce_sum(per_pair_loss * mask, axis=-1) / (num_pairs + K.epsilon()) * batch_size
+
+
+class AugmentedBinaryCrossentropy(BinaryCrossentropy):
+    def call(self, y_true, y_pred):
+        tile = tf.shape(y_pred)[0] // tf.shape(y_true)[0]
+        tile_shape = tf.concat([[tile], tf.ones(tf.rank(y_true) -1, dtype=tf.int32)], axis=0)
+        y_true = tf.tile(y_true, tile_shape)
+
+        losses = super().call(y_true, y_pred)
+        losses = tf.reduce_sum(tf.reshape(losses, shape=[-1, tile]), axis=1)
+
+        return losses
 
 
 class RankingLoss(LossFunctionWrapper):

@@ -71,7 +71,7 @@ class Identity(tf.keras.layers.Layer):
 
 class FeedForwardLayer(tf.keras.layers.Layer):
     def __init__(self,
-                 hidden_units: List[int],
+                 hidden_units: Union[int, List[int]],
                  activation: Optional[Union[str, Callable]] = "relu",
                  l2_reg: float = 0.,
                  dropout_rate: float = 0.,
@@ -79,6 +79,8 @@ class FeedForwardLayer(tf.keras.layers.Layer):
                  **kwargs
                  ):
 
+        if not isinstance(hidden_units, list):
+            hidden_units = [hidden_units]
         self.dense_layers = [tf.keras.layers.Dense(i, kernel_regularizer=l2(l2_reg)) for i in hidden_units]
 
         self.activations = [get_activation(activation) for _ in hidden_units]
@@ -110,11 +112,11 @@ class FeedForwardLayer(tf.keras.layers.Layer):
 
 def predict(task, inputs):
     if task.return_logit:
-        logit = PredictLayer(task.belong, task.num_classes, as_logit=True, name=f"dnn/logit_layer")(inputs)
-        prediction = PredictLayer(task.belong, task.num_classes, name=f"dnn/predict_layer")(logit)
+        logit = PredictLayer(task.belong, task.num_classes, as_logit=True, name=f"dnn/{task.name}_logit_layer")(inputs)
+        prediction = PredictLayer(task.belong, task.num_classes, name=f"dnn/{task.name}_predict_layer")(logit)
         outputs = [Identity(name=task.name)(prediction), Identity(name="logit")(logit)]
     else:
-        outputs = PredictLayer(task.belong, task.num_classes, name=f"dnn/predict_layer")(inputs)
+        outputs = PredictLayer(task.belong, task.num_classes, name=f"dnn/{task.name}_predict_layer")(inputs)
         outputs = Identity(name=task.name)(outputs)
 
     return outputs

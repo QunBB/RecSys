@@ -6,31 +6,15 @@ KDD'2024：https://arxiv.org/abs/2403.00793
 from typing import List, Union, Callable, Optional, Dict, Tuple, Any, Sequence
 from collections import defaultdict
 from itertools import chain
-from enum import Enum
 
 import tensorflow as tf
 
 from recsys.feature import Field, Task
 from recsys.feature.utils import build_feature_embeddings
 from recsys.layers.core import FeedForwardLayer, PredictLayer, Identity
-from recsys.layers.interaction import GwPFM as _GwPFM
-from recsys.layers.interaction import CrossNet as _CrossNet
-from recsys.layers.interaction import ProductLayer as _ProductLayer
-from recsys.layers.interaction import WeightedSum
+from recsys.layers.interaction import WeightedSum, InteractionExpert
 from recsys.layers.utils import history_embedding_aggregation
 from recsys.train.multi_opt_model import Model
-
-
-class InteractionExpert(Enum):
-    CrossNet = _CrossNet
-    GwPFM = _GwPFM
-    ProductLayer = _ProductLayer
-
-    def __str__(self):
-        return self._name_
-
-    def init_layer(self, *args, **kwargs):
-        return self.value(*args, **kwargs)
 
 
 def count_num_groups(

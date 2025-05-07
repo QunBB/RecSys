@@ -19,7 +19,7 @@ class Task:
         return self.name
 
     def __hash__(self):
-        return hash((self.name, self.belong, self.num_classes))  # 自定义哈希值
+        return hash((self.name, self.belong, self.num_classes))
 
 
 @dataclass
@@ -31,7 +31,7 @@ class Field:
     l2_reg: float = 0.  # embeddings l2 regularizer
     initializer: Union[str, Initializer] = "uniform"  # embeddings initializer
     belong: str = "user"  # what kind of the field
-    length: int = 0  # history's max length, or dense field's dimension which don't use embedding
+    length: int = 1  # history's max length, or dense field's dimension which don't use embedding
     group: str = "default"  # you can set different groups for multitask or multi history or field groups
     dtype: str = "int32"
 

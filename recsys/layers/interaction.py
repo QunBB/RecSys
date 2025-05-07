@@ -1,4 +1,5 @@
 from itertools import combinations
+from enum import Enum
 
 import tensorflow as tf
 from tensorflow.keras.initializers import Zeros, Constant, Ones
@@ -910,3 +911,19 @@ class BiLinearLayer(Layer):
         # [bs, 1, dim] x [bs, dim, 1] = [bs, 1]
         interaction = tf.matmul(tf.expand_dims(v_i, axis=1), tf.expand_dims(v_j, axis=-1))
         return tf.reshape(interaction, [-1, 1])
+
+
+class InteractionExpert(Enum):
+    CrossNet = CrossNet
+    GwPFM = GwPFM
+    ProductLayer = ProductLayer
+    SENet = SENet
+    BiLinearLayer = BiLinearLayer
+
+    def __str__(self):
+        return self._name_
+
+    def init_layer(self, *args, **kwargs):
+        if "name" not in kwargs:
+            kwargs["name"] = f"dnn/{self._name_}_interaction"
+        return self.value(*args, **kwargs)
